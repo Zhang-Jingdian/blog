@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "source": {},
+  "resolved": {
+    "compatibility_date": "2026-02-24",
+    "compatibility_flags": ["nodejs_als"],
+    "account_id": "cb730829cc14c443d8be0b6d311ded9a",
+    "name": "website"
+  },
+  "text": "{\n  \"compatibility_date\": \"2026-02-24\",\n  \"compatibility_flags\": [\n    \"nodejs_als\"\n  ],\n  \"account_id\": \"cb730829cc14c443d8be0b6d311ded9a\",\n  \"name\": \"website\"\n}\n"
+}
