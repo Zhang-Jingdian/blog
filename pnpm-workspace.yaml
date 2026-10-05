@@ -13,10 +13,16 @@ catalogMode: prefer
 
 catalog:
   "@types/node": ^24
+  "@vitejs/plugin-vue": ^6.0.9
+  pinia: ^4.0.3
   typescript: ^7.0.2
   vite: npm:@voidzero-dev/vite-plus-core@1.0.0
+  vite-plugin-vue-devtools: ^8.2.1
   vite-plus: 1.0.0
   void: ^0.24.0
+  vue: ^3.5.43
+  vue-router: ^5.3.1
+  vue-tsc: ^3.3.12
 overrides:
   vite@*: "catalog:"
 peerDependencyRules:
