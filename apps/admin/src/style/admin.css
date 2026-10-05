@@ -1,0 +1,272 @@
+/* Admin layout — layered on top of the tokens defined in global.css. */
+
+/* global.css sets `font-family: var(--font-atkinson)` but never defines the
+   token (no webfont ships with the admin). Fall back to a system stack while
+   still honouring the variable if it is defined later. */
+body {
+  font-family: var(--font-atkinson, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif);
+}
+
+/* --- shell --- */
+
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgb(var(--gray-light));
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+}
+
+.admin-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0.7rem 1em;
+}
+
+.admin-brand {
+  font-weight: 700;
+  color: rgb(var(--black));
+  text-decoration: none;
+}
+
+.admin-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+/* Wider than the blog's 720px column; the login card is narrower. */
+.admin-main {
+  width: min(1100px, calc(100% - 2em));
+}
+
+.admin-narrow {
+  width: min(400px, calc(100% - 2em));
+}
+
+/* --- page furniture --- */
+
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.muted {
+  color: rgb(var(--gray));
+}
+
+.small {
+  font-size: 0.8em;
+}
+
+/* --- table --- */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.6em 0.5em;
+  border-bottom: 1px solid rgb(var(--gray-light));
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgb(var(--gray));
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1em 0.6em;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.badge-published {
+  background: var(--accent);
+  color: #fff;
+}
+
+.badge-draft {
+  background: rgb(var(--gray-light));
+  color: rgb(var(--gray-dark));
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* --- forms --- */
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  max-width: 720px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field > span {
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+.field-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+.field-row .field {
+  flex: 1 1 200px;
+}
+
+.admin-main input,
+.admin-main select,
+.admin-main textarea,
+.admin-narrow input,
+.admin-narrow select,
+.admin-narrow textarea {
+  width: 100%;
+  padding: 0.5em 0.7em;
+  border: 1px solid rgb(var(--gray-light));
+  border-radius: 6px;
+  background: #fff;
+  color: rgb(var(--black));
+  font: inherit;
+  font-size: 0.85em;
+}
+
+.field-inline select {
+  width: auto;
+}
+
+.admin-main input:focus,
+.admin-main select:focus,
+.admin-main textarea:focus {
+  outline: 2px solid rgba(35, 55, 255, 0.35);
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+
+.editor {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.form-error {
+  margin: 0;
+  color: #c0392b;
+  font-size: 0.85em;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+/* --- buttons --- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.35em 0.9em;
+  border: 1px solid rgb(var(--gray-light));
+  border-radius: 6px;
+  background: #fff;
+  color: rgb(var(--gray-dark));
+  font: inherit;
+  font-size: 0.8em;
+  line-height: 1.6;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.btn:hover {
+  border-color: rgb(var(--gray));
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
+}
+
+.btn-ghost {
+  background: transparent;
+}
+
+.btn-danger {
+  color: #c0392b;
+  border-color: rgba(192, 57, 43, 0.35);
+}
+
+.btn-danger:hover {
+  background: rgba(192, 57, 43, 0.08);
+  border-color: #c0392b;
+}

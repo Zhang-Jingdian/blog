@@ -17,4 +17,17 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  server: {
+    port: 5173,
+    strictPort: true,
+    // Forward API calls (including /api/auth) to the Void API in dev. Keeping
+    // changeOrigin off preserves the browser's Origin, which Better Auth checks
+    // against its trustedOrigins. This keeps cookies same-origin: no CORS needed.
+    proxy: {
+      "/api": {
+        target: "http://localhost:8787",
+        changeOrigin: false,
+      },
+    },
+  },
 });
