@@ -8,7 +8,9 @@ export default defineConfig({
   inference: {
     appType: "static",
     // Void's static preset does not know Astro, so it would upload `dist` as-is
-    // without building. Tell it to run the Astro build.
-    build: "astro build",
+    // without building. `void prepare` first: it generates .void/tsconfig.json
+    // (gitignored), which `astro sync` inside `astro build` requires — without
+    // it a fresh checkout / CI build fails.
+    build: "void prepare && astro build",
   },
 });
