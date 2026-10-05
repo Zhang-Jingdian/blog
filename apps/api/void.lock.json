@@ -3,7 +3,16 @@
   "source": {},
   "resolved": {
     "account_id": "cb730829cc14c443d8be0b6d311ded9a",
-    "compatibility_date": "2026-02-24"
+    "compatibility_date": "2026-02-24",
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "api-db",
+        "database_id": "9871316f-2464-447b-9280-2659a21dae5e",
+        "migrations_dir": "./db/migrations"
+      }
+    ],
+    "name": "api"
   },
-  "text": "{\n  \"account_id\": \"cb730829cc14c443d8be0b6d311ded9a\",\n  \"compatibility_date\": \"2026-02-24\"\n}\n"
+  "text": "{\n  \"account_id\": \"cb730829cc14c443d8be0b6d311ded9a\",\n  \"compatibility_date\": \"2026-02-24\",\n  \"d1_databases\": [\n    {\n      \"binding\": \"DB\",\n      \"database_name\": \"api-db\",\n      \"database_id\": \"9871316f-2464-447b-9280-2659a21dae5e\",\n      \"migrations_dir\": \"./db/migrations\"\n    }\n  ],\n  \"name\": \"api\"\n}\n"
 }
