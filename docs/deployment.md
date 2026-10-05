@@ -10,11 +10,11 @@
 
 > 先看这张表，避免按「已完成」的预期去配置尚未存在的东西。
 
-| App            | 技术                              | 现状                                                                                                                                                         |
-| -------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `apps/api`     | Void + Drizzle + D1 + Better Auth | 认证（邮箱密码、关闭公开注册）、业务表 + 迁移、seed 引导管理员已完成；**业务 API 路由（`routes/`）尚未实现**；纯 API Worker（无前端入口，产出仅 `dist/ssr`） |
-| `apps/website` | Astro（静态）                     | 默认博客模板，**尚未接入 API**；`astro.config.mjs` 的 `site` 还是占位 `https://example.com`                                                                  |
-| `apps/admin`   | Vue 3 SPA                         | 默认脚手架，**尚未接入 API，也尚未接入 void/Cloudflare 部署**（无 `void.config.ts`、无 `void` 依赖）                                                         |
+| App            | 技术                              | 现状                                                                                                                                                                                                   |
+| -------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/api`     | Void + Drizzle + D1 + Better Auth | 认证 + 业务表 + seed 已完成；**posts CRUD 已实现**（公开只读 `/api/posts`、`/api/posts/:slug`、`/api/categories`；管理 `/api/admin/posts` 需登录会话）；纯 API Worker（无前端入口，产出仅 `dist/ssr`） |
+| `apps/website` | Astro（静态）                     | 默认博客模板，**尚未接入 API**；`astro.config.mjs` 的 `site` 还是占位 `https://example.com`                                                                                                            |
+| `apps/admin`   | Vue 3 SPA                         | 默认脚手架，**尚未接入 API，也尚未接入 void/Cloudflare 部署**（无 `void.config.ts`、无 `void` 依赖）                                                                                                   |
 
 部署目标：`apps/api` 与 `apps/website` 已保存为「直接 Cloudflare」（`.void/project.json` = `{ "platform": "cloudflare" }`）；`apps/admin` 未配置。
 
@@ -224,7 +224,7 @@ void env types          # 重新生成 .void/env.d.ts
 - [ ] **生产管理员引导方案**（§7 缺口，尚未实现）
 - [ ] website 的 `astro.config.mjs` 占位域名 `https://example.com`
 - [ ] admin 尚未接入 void/部署，也未接 API
-- [ ] 业务 API 路由（`routes/`）尚未实现
+- [ ] posts CRUD 已完成；但 tags / `post_links`（`[[ ]]` 双链）、CORS + Better Auth `trustedOrigins`（跨域 admin 调用）仍未实现
 - [ ] `apps/api/docs/` 被 `apps/api/.gitignore` 的 `docs/` 忽略：`db.md` 是有价值的数据库设计文档但当前未入库；`deployemtOfFlareStackBlogWeb.md` 是他人文档，建议继续不入库
 - [ ] **typescript 无法统一（有意为之）**：`apps/admin` 受 vue-tsc 3.3.12 限制必须用 TS 6（TS 7 会报 `ERR_PACKAGE_PATH_NOT_EXPORTED`），故 `apps/api` / `apps/admin` 显式 pin `~6.0.x`；`packages/utils`(`^7.0.2`) 与 Astro 用 TS 7。两套 TS 并存，别盲目对齐到 catalog 的 `^7.0.2`
 
