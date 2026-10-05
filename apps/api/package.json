@@ -9,6 +9,7 @@
     "preview": "vp preview"
   },
   "devDependencies": {
+    "@better-auth/utils": "0.4.2",
     "typescript": "~6.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:",

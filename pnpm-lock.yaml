@@ -187,6 +187,9 @@ importers:
 
   apps/api:
     devDependencies:
+      '@better-auth/utils':
+        specifier: 0.4.2
+        version: 0.4.2
       typescript:
         specifier: ~6.0.2
         version: 6.0.3
