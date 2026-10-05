@@ -1,8 +1,13 @@
 name: Deploy
 
+# Deploys to Cloudflare from CI.
+#
+# `.void/project.json` (which records the deployment platform) is gitignored, so
+# a fresh checkout has no saved destination and Void stops asking to link the
+# existing Worker. Passing `--platform cloudflare` explicitly avoids that.
+#
 # The website is a static (SSG) build that fetches posts from the API, so it has
-# to be rebuilt for posts published in the admin to appear. Deploying from CI
-# also sidesteps local network/proxy issues reaching *.workers.dev.
+# to be rebuilt for posts published in the admin to appear.
 on:
   # Manual run from the Actions tab.
   workflow_dispatch:
@@ -16,6 +21,11 @@ on:
 concurrency:
   group: deploy
   cancel-in-progress: false
+
+env:
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  # Not a secret — already recorded in apps/api/void.lock.json; pins the account.
+  CLOUDFLARE_ACCOUNT_ID: cb730829cc14c443d8be0b6d311ded9a
 
 jobs:
   api:
@@ -35,9 +45,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Deploy API
         working-directory: apps/api
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: pnpm exec void deploy
+        run: pnpm exec void deploy --platform cloudflare
 
   website:
     # Run after the API, including when it was skipped (scheduled runs).
@@ -58,8 +66,6 @@ jobs:
       - name: Deploy website
         working-directory: apps/website
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          # Build-time API origin the SSG fetches posts from. Set the repository
-          # variable VITE_API_BASE_URL to override (e.g. a custom domain).
+          # Build-time API origin the SSG fetches posts from (repository variable).
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
-        run: pnpm exec void deploy
+        run: pnpm exec void deploy --platform cloudflare
