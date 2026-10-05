@@ -1,0 +1,65 @@
+name: Deploy
+
+# The website is a static (SSG) build that fetches posts from the API, so it has
+# to be rebuilt for posts published in the admin to appear. Deploying from CI
+# also sidesteps local network/proxy issues reaching *.workers.dev.
+on:
+  # Manual run from the Actions tab.
+  workflow_dispatch:
+  # Periodic rebuild of the website.
+  schedule:
+    - cron: "17 */6 * * *"
+  push:
+    branches: [main]
+
+# Never run two deploys at once.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  api:
+    # Scheduled runs only refresh the website; API code changes arrive via push.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy API
+        working-directory: apps/api
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: pnpm exec void deploy
+
+  website:
+    # Run after the API, including when it was skipped (scheduled runs).
+    needs: api
+    if: always() && !cancelled() && (needs.api.result == 'success' || needs.api.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Deploy website
+        working-directory: apps/website
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Build-time API origin the SSG fetches posts from. Set the repository
+          # variable VITE_API_BASE_URL to override (e.g. a custom domain).
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://api.2157429750.workers.dev' }}
+        run: pnpm exec void deploy
