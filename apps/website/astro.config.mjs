@@ -8,7 +8,9 @@ import { voidPlugin } from "void";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://example.com",
+  // Used for canonical URLs, RSS links and the sitemap. Update when a custom
+  // domain is bound to the Worker.
+  site: "https://website.2157429750.workers.dev",
   output: "server",
   // Void's Astro integration (framework mode): Astro owns the build and the
   // Cloudflare adapter owns the output, while Void plugs into Vite for
