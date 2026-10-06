@@ -12,6 +12,7 @@ allowBuilds:
 catalogMode: prefer
 
 catalog:
+  "@astrojs/cloudflare": ^14.3.3
   "@types/node": ^24
   "@vitejs/plugin-vue": ^6.0.9
   pinia: ^4.0.3

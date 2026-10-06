@@ -1,13 +1,22 @@
 // @ts-check
 
+import cloudflare from "@astrojs/cloudflare";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, fontProviders } from "astro/config";
+import { voidPlugin } from "void";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://example.com",
+  output: "server",
+  // Void's Astro integration (framework mode): Astro owns the build and the
+  // Cloudflare adapter owns the output, while Void plugs into Vite for
+  // bindings/deploy. This is the supported deploy path (the `appType: "static"`
+  // pre-built-site path could not bootstrap a Worker).
+  adapter: cloudflare({ configPath: "./.void-wrangler.jsonc" }),
   integrations: [mdx(), sitemap()],
+  vite: { plugins: [voidPlugin()] },
   fonts: [
     {
       provider: fontProviders.local(),

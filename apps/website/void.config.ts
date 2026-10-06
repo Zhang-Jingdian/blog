@@ -4,13 +4,7 @@ import { defineConfig } from "void/config";
 export default defineConfig({
   worker: {
     compatibility_date: "2026-02-24",
-  },
-  inference: {
-    appType: "static",
-    // Void's static preset does not know Astro, so it would upload `dist` as-is
-    // without building. `void prepare` first: it generates .void/tsconfig.json
-    // (gitignored), which `astro sync` inside `astro build` requires — without
-    // it a fresh checkout / CI build fails.
-    build: "void prepare && astro build",
+    // Required by Void's runtime helpers when Astro uses the Cloudflare adapter.
+    compatibility_flags: ["nodejs_als"],
   },
 });
