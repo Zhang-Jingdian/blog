@@ -1,61 +1,35 @@
 <script setup lang="ts">
-import { RouterLink } from "vue-router";
+import { RouterLink, useRoute } from "vue-router";
+
+const route = useRoute();
 
 const links = [
   { to: "/posts", label: "Posts" },
   { to: "/tags", label: "Tags" },
   { to: "/categories", label: "Categories" },
 ];
+
+function isActive(to: string) {
+  return route.path === to || route.path.startsWith(`${to}/`);
+}
 </script>
 
 <template>
-  <header>
-    <nav>
-      <h2>
-        <RouterLink to="/posts">Blog Admin</RouterLink>
-      </h2>
-      <div class="internal-links">
-        <RouterLink v-for="link in links" :key="link.to" :to="link.to">
-          {{ link.label }}
-        </RouterLink>
-      </div>
+  <header class="grid bg-white px-[1em] shadow-[0_2px_8px_rgba(var(--black),0.05)]">
+    <nav
+      class="grid grid-flow-row justify-items-start gap-1 py-2 xs:grid-flow-col xs:justify-start xs:gap-0 xs:py-0"
+    >
+      <RouterLink
+        v-for="link in links"
+        :key="link.to"
+        :to="link.to"
+        :class="[
+          'border-b-4 px-2 py-4 text-ink no-underline',
+          isActive(link.to) ? 'border-accent' : 'border-transparent',
+        ]"
+      >
+        {{ link.label }}
+      </RouterLink>
     </nav>
   </header>
 </template>
-
-<style scoped>
-header {
-  margin: 0;
-  padding: 0 1em;
-  background: white;
-  box-shadow: 0 2px 8px rgba(var(--black), 5%);
-}
-h2 {
-  margin: 0;
-  font-size: 1em;
-}
-h2 a {
-  text-decoration: none;
-}
-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-nav a {
-  padding: 1em 0.5em;
-  color: rgb(var(--black));
-  border-bottom: 4px solid transparent;
-  text-decoration: none;
-}
-nav a.router-link-active {
-  border-bottom-color: var(--accent);
-}
-@media (max-width: 720px) {
-  nav {
-    flex-direction: column;
-    gap: 0.5em;
-    padding: 0.5em 0;
-  }
-}
-</style>

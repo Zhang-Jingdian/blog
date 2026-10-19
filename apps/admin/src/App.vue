@@ -5,9 +5,11 @@ import Footer from "@/components/Footer.vue";
 </script>
 
 <template>
-  <Header />
-  <main>
-    <RouterView />
-  </main>
-  <Footer />
+  <div class="grid min-h-screen grid-rows-[auto_1fr_auto]">
+    <Header />
+    <main class="mx-auto w-[720px] max-w-[calc(100%-2em)] px-[1em] py-[1em] xs:py-[3em]">
+      <RouterView />
+    </main>
+    <Footer />
+  </div>
 </template>

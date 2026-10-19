@@ -111,72 +111,85 @@ onMounted(async () => {
 
 <template>
   <section>
-    <div class="page-head">
-      <h1>{{ isEdit ? "Edit post" : "New post" }}</h1>
+    <div class="mb-4 grid grid-cols-1 gap-2 xs:grid-cols-[minmax(0,1fr)_auto] xs:items-center">
+      <h1 class="m-0">{{ isEdit ? "Edit post" : "New post" }}</h1>
       <RouterLink to="/posts" class="link">← Back to posts</RouterLink>
     </div>
 
-    <p v-if="error" class="error">{{ error }}</p>
+    <p v-if="error" class="text-danger">{{ error }}</p>
 
-    <form v-if="!loading" class="form" @submit.prevent="submit">
-      <label>
+    <form v-if="!loading" class="grid gap-4" @submit.prevent="submit">
+      <label class="grid gap-1 text-body">
         Title
-        <input v-model="form.title" required maxlength="200" />
+        <input v-model="form.title" required maxlength="200" class="field" />
       </label>
 
-      <label>
+      <label class="grid gap-1 text-body">
         Content
-        <textarea v-model="form.content" rows="12" required></textarea>
+        <textarea v-model="form.content" rows="12" required class="field resize-y"></textarea>
       </label>
 
-      <label>
-        Slug <span class="muted">(optional, defaults from title)</span>
-        <input v-model="form.slug" placeholder="my-post" />
+      <label class="grid gap-1 text-body">
+        Slug <span class="font-normal text-muted">(optional, defaults from title)</span>
+        <input v-model="form.slug" placeholder="my-post" class="field" />
       </label>
 
-      <label>
+      <label class="grid gap-1 text-body">
         Description
-        <textarea v-model="form.description" rows="2" maxlength="500"></textarea>
+        <textarea
+          v-model="form.description"
+          rows="2"
+          maxlength="500"
+          class="field resize-y"
+        ></textarea>
       </label>
 
-      <label>
+      <label class="grid gap-1 text-body">
         Cover URL
-        <input v-model="form.coverUrl" type="url" placeholder="https://…" />
+        <input v-model="form.coverUrl" type="url" placeholder="https://…" class="field" />
       </label>
 
-      <label>
+      <label class="grid gap-1 text-body">
         Status
-        <select v-model="form.status">
+        <select v-model="form.status" class="field">
           <option value="draft">Draft</option>
           <option value="published">Published</option>
         </select>
       </label>
 
-      <label>
+      <label class="grid gap-1 text-body">
         Category
         <select
           :value="form.categoryId === null ? '' : String(form.categoryId)"
           @change="onCategoryChange"
+          class="field"
         >
           <option value="">None</option>
           <option v-for="c in categories" :key="c.id" :value="String(c.id)">{{ c.name }}</option>
         </select>
       </label>
 
-      <fieldset>
-        <legend>Tags</legend>
-        <label v-for="t in tags" :key="t.id" class="checkbox">
-          <input
-            type="checkbox"
-            :checked="form.tagIds.includes(t.id)"
-            @change="toggleTag(t.id, ($event.target as HTMLInputElement).checked)"
-          />
-          {{ t.name }}
-        </label>
-        <p v-if="!tags.length" class="muted">No tags yet.</p>
+      <fieldset class="rounded-md border border-soft px-4 py-3">
+        <legend class="px-2 text-body">Tags</legend>
+        <div class="grid gap-2">
+          <label
+            v-for="t in tags"
+            :key="t.id"
+            class="grid grid-flow-col items-center justify-start gap-2"
+          >
+            <input
+              type="checkbox"
+              class="p-0"
+              :checked="form.tagIds.includes(t.id)"
+              @change="toggleTag(t.id, ($event.target as HTMLInputElement).checked)"
+            />
+            {{ t.name }}
+          </label>
+          <p v-if="!tags.length" class="text-muted">No tags yet.</p>
+        </div>
       </fieldset>
 
-      <div class="actions">
+      <div class="grid grid-flow-col items-center justify-start gap-4">
         <button type="submit" class="btn" :disabled="saving">
           {{ saving ? "Saving…" : "Save" }}
         </button>
@@ -185,91 +198,3 @@ onMounted(async () => {
     </form>
   </section>
 </template>
-
-<style scoped>
-.page-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1em;
-}
-.page-head h1 {
-  margin: 0;
-}
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-}
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25em;
-  color: rgb(var(--gray-dark));
-}
-input,
-textarea,
-select {
-  font-size: 16px;
-  padding: 0.5em 0.6em;
-  border: 1px solid rgb(var(--gray-light));
-  border-radius: 6px;
-  color: rgb(var(--gray-dark));
-  font-family: inherit;
-}
-textarea {
-  resize: vertical;
-}
-fieldset {
-  border: 1px solid rgb(var(--gray-light));
-  border-radius: 6px;
-  padding: 0.75em 1em;
-}
-fieldset legend {
-  padding: 0 0.5em;
-  color: rgb(var(--gray-dark));
-}
-.checkbox {
-  flex-direction: row;
-  align-items: center;
-  gap: 0.5em;
-}
-.checkbox input {
-  padding: 0;
-}
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 1em;
-}
-.btn {
-  padding: 0.5em 1em;
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
-}
-.btn:hover {
-  background: var(--accent-dark);
-}
-.btn:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-.link {
-  color: var(--accent);
-  text-decoration: none;
-}
-.link:hover {
-  color: var(--accent-dark);
-}
-.muted {
-  color: rgb(var(--gray));
-  font-weight: normal;
-}
-.error {
-  color: rgb(180, 60, 60);
-}
-</style>

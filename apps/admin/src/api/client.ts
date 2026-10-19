@@ -48,10 +48,17 @@ function jsonInit(method: string, body?: unknown): RequestInit {
   };
 }
 
-export function listPosts(query?: { status?: string; q?: string }): Promise<PostListResult> {
+export function listPosts(query?: {
+  status?: string;
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<PostListResult> {
   const params = new URLSearchParams();
   if (query?.status && query.status !== "all") params.set("status", query.status);
   if (query?.q) params.set("q", query.q);
+  if (query?.page && query.page > 1) params.set("page", String(query.page));
+  if (query?.pageSize) params.set("pageSize", String(query.pageSize));
   const qs = params.toString();
   return request<PostListResult>(`/api/admin/posts${qs ? `?${qs}` : ""}`);
 }
