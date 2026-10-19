@@ -1,0 +1,30 @@
+---
+import BlogPostLayout from '../../layouts/BlogPost.astro'
+import type { BlogPost } from '../../lib/api'
+import { listFullBlogs, renderMarkdown } from '../../lib/api'
+
+export async function getStaticPaths() {
+  const posts = await listFullBlogs()
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }))
+}
+
+interface Props {
+  post: BlogPost
+}
+
+const { post } = Astro.props
+---
+
+<BlogPostLayout
+  title={post.title}
+  description={post.description}
+  coverUrl={post.coverUrl}
+  publishedAt={new Date(post.publishedAt)}
+  updatedAt={new Date(post.updatedAt)}
+  category={post.category}
+  tags={post.tags}
+  contentHtml={renderMarkdown(post.content)}
+/>

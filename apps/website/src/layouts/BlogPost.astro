@@ -1,0 +1,58 @@
+---
+import FormattedDate from '../components/FormattedDate.astro'
+import MainLayout from './MainLayout.astro'
+
+interface Props {
+  title: string
+  description: string | null
+  coverUrl: string | null
+  publishedAt: Date
+  updatedAt: Date
+  category: { name: string; slug: string } | null
+  tags: { name: string; slug: string }[]
+  contentHtml: string
+}
+
+const { title, description, coverUrl, publishedAt, updatedAt, category, tags, contentHtml } =
+  Astro.props
+const hasUpdate = updatedAt && publishedAt && updatedAt.getTime() > publishedAt.getTime()
+---
+
+<MainLayout title={title} description={description ?? ''} image={coverUrl ?? undefined}>
+  <article>
+    {coverUrl && (
+      <div class="grid w-full grid-cols-1 justify-items-center">
+        <img src={coverUrl} alt="" class="w-full rounded-xl shadow-(--box-shadow)" />
+      </div>
+    )}
+    <div class="text-body">
+      <div class="py-4 text-center font-bold leading-none">
+        <h1 class="mb-1">{title}</h1>
+      </div>
+
+      <div class="mb-8 grid justify-items-start gap-2 text-muted">
+        <div class="grid grid-flow-col items-center justify-start gap-x-3 gap-y-2">
+          <FormattedDate date={publishedAt} />
+          {hasUpdate && (
+            <span class="italic">Last updated on <FormattedDate date={updatedAt} /></span>
+          )}
+        </div>
+        <div class="grid grid-flow-col items-center justify-start gap-x-3 gap-y-2">
+          {category && (
+            <a class="text-accent no-underline" href={`/blog?category=${category.slug}`}>
+              //{category.name}
+            </a>
+          )}
+          {tags.map((tag) => (
+            <a class="text-accent no-underline" href={`/blog?tag=${tag.slug}`}>
+              #{tag.name}
+            </a>
+          ))}
+        </div>
+      </div>
+      {description && <p class="mb-4 mt-0 text-[1.1em] leading-normal text-muted">{description}</p>}
+      <hr />
+      <div class="content" set:html={contentHtml} />
+    </div>
+  </article>
+</MainLayout>

@@ -1,0 +1,109 @@
+import type {
+  Post,
+  PostInput,
+  PostListResult,
+  PostStatus,
+  Taxonomy,
+  TaxonomyInput,
+  TaxonomyKind,
+} from "./types";
+
+interface Envelope<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
+export class ApiError extends Error {
+  readonly issues?: unknown;
+
+  constructor(message: string, issues?: unknown) {
+    super(message);
+    this.name = "ApiError";
+    this.issues = issues;
+  }
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(path, init);
+  let envelope: Envelope<T> | null = null;
+  try {
+    envelope = (await res.json()) as Envelope<T>;
+  } catch {
+    envelope = null;
+  }
+  if (!res.ok) {
+    throw new ApiError(envelope?.message ?? `Request failed (${res.status})`, envelope?.data);
+  }
+  if (!envelope) throw new ApiError("Invalid response");
+  return envelope.data;
+}
+
+function jsonInit(method: string, body?: unknown): RequestInit {
+  if (body === undefined) return { method };
+  return {
+    method,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  };
+}
+
+export function listPosts(query?: { status?: string; q?: string }): Promise<PostListResult> {
+  const params = new URLSearchParams();
+  if (query?.status && query.status !== "all") params.set("status", query.status);
+  if (query?.q) params.set("q", query.q);
+  const qs = params.toString();
+  return request<PostListResult>(`/api/admin/posts${qs ? `?${qs}` : ""}`);
+}
+
+export function getPost(id: number): Promise<Post> {
+  return request<Post>(`/api/admin/posts/${id}`);
+}
+
+export function createPost(input: PostInput): Promise<Post> {
+  return request<Post>("/api/admin/posts", jsonInit("POST", input));
+}
+
+export function updatePost(id: number, input: PostInput): Promise<Post> {
+  return request<Post>(`/api/admin/posts/${id}`, jsonInit("PUT", input));
+}
+
+export function deletePost(id: number): Promise<{ deleted: boolean }> {
+  return request<{ deleted: boolean }>(`/api/admin/posts/${id}`, { method: "DELETE" });
+}
+
+export function updatePostStatus(id: number, status: PostStatus): Promise<Post> {
+  return request<Post>(`/api/admin/posts/${id}/status`, jsonInit("PATCH", { status }));
+}
+
+const taxonomyPath = (kind: TaxonomyKind) => (kind === "tag" ? "tags" : "categories");
+
+export function listTaxonomy(kind: TaxonomyKind): Promise<Taxonomy[]> {
+  return request<Taxonomy[]>(`/api/admin/${taxonomyPath(kind)}`);
+}
+
+export const listCategories = (): Promise<Taxonomy[]> => listTaxonomy("category");
+
+export const listTags = (): Promise<Taxonomy[]> => listTaxonomy("tag");
+
+export function createTaxonomy(kind: TaxonomyKind, input: TaxonomyInput): Promise<Taxonomy> {
+  return request<Taxonomy>(`/api/admin/${taxonomyPath(kind)}`, jsonInit("POST", input));
+}
+
+export function updateTaxonomy(
+  kind: TaxonomyKind,
+  id: number,
+  input: TaxonomyInput,
+): Promise<Taxonomy> {
+  return request<Taxonomy>(`/api/admin/${taxonomyPath(kind)}/${id}`, jsonInit("PUT", input));
+}
+
+export function deleteTaxonomy(
+  kind: TaxonomyKind,
+  id: number,
+): Promise<{ deleted: boolean; affectedPosts?: number }> {
+  return request<{ deleted: boolean; affectedPosts?: number }>(
+    `/api/admin/${taxonomyPath(kind)}/${id}`,
+    { method: "DELETE" },
+  );
+}

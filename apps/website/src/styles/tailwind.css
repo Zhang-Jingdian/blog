@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  /* 720px — matches the site's existing mobile breakpoint in global.css */
+  --breakpoint-xs: 45rem;
+
+  /* Map Bear Blog's palette (global.css) to Tailwind color utilities */
+  --color-accent: var(--accent);
+  --color-ink: rgb(var(--black));
+  --color-muted: rgb(var(--gray));
+  --color-soft: rgb(var(--gray-light));
+  --color-body: rgb(var(--gray-dark));
+}

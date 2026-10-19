@@ -1,0 +1,19 @@
+---
+import { SITE_TITLE } from '../consts'
+import HeaderLink from './HeaderLink.astro'
+
+const navLinkClass = 'border-b-4 px-2 py-4 text-ink no-underline xs:px-1.5 xs:text-[0.9em]'
+---
+
+<header class="bg-white px-2 shadow-[0_2px_8px_rgba(var(--black),0.05)] xs:px-4">
+  <nav class="grid grid-flow-col items-center justify-between">
+    <h2 class="m-0 text-lg font-bold">
+      <a href="/" class="text-ink no-underline">{SITE_TITLE}</a>
+    </h2>
+    <div class="internal-links">
+      <HeaderLink href="/" class={navLinkClass}>HOME</HeaderLink>
+      <HeaderLink href="/blog" class={navLinkClass}>BLOG</HeaderLink>
+      <HeaderLink href="/more" class={navLinkClass}>MORE</HeaderLink>
+    </div>
+  </nav>
+</header>

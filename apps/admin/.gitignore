@@ -37,3 +37,9 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+.void
+.wrangler
+.void-wrangler.jsonc
+.env
+.env.*
+!.env.example

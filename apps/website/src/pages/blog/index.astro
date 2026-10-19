@@ -1,0 +1,138 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro'
+import FormattedDate from '../../components/FormattedDate.astro'
+import { listFullBlogs } from '../../lib/api'
+
+const posts = (await listFullBlogs()).map((post) => ({
+  title: post.title,
+  slug: post.slug,
+  coverUrl: post.coverUrl,
+  publishedAt: post.publishedAt,
+  description: post.description ?? '',
+  category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
+  tags: post.tags.map((tag) => ({ name: tag.name, slug: tag.slug })),
+}))
+---
+
+<MainLayout>
+  <section>
+    <form class="mb-8 grid gap-4 xs:grid-cols-[1fr_auto] xs:items-center" method="get" action="/blog">
+      <input
+        type="search"
+        name="q"
+        id="q-input"
+        autocomplete="off"
+        class="w-full border-b-4 border-soft bg-transparent py-2 text-base font-bold text-ink outline-none focus:border-accent"
+      />
+      <button
+        type="submit"
+        class="w-full cursor-pointer rounded bg-accent px-4 py-2 text-base font-bold text-white xs:w-auto"
+      >
+        Search
+      </button>
+    </form>
+    <ul id="posts" class="m-0 grid grid-cols-1 list-none gap-x-6 gap-y-8 p-0 xs:grid-cols-2">
+      {posts.map((post) => (
+        <li
+          data-title={post.title.toLowerCase()}
+          data-desc={post.description.toLowerCase()}
+          data-category={post.category?.slug ?? ''}
+          data-tags={post.tags.map((tag) => tag.slug).join(' ')}
+        >
+          <a
+            href={`/blog/${post.slug}/`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group block text-inherit no-underline"
+          >
+            {post.coverUrl && (
+              <div class="mb-2 grid h-40 w-full place-items-center bg-transparent xs:h-50">
+                <img
+                  src={post.coverUrl}
+                  alt=""
+                  loading="lazy"
+                  class="h-auto max-h-40 max-w-full min-w-0 w-auto rounded-lg shadow-(--box-shadow) xs:max-h-50"
+                />
+              </div>
+            )}
+            <h4 class="m-0 text-center font-bold text-ink group-hover:text-accent">{post.title}</h4>
+            <p class="mb-2 mt-1 text-center text-muted">
+              <FormattedDate date={new Date(post.publishedAt)} />
+            </p>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <p id="empty" hidden class="mt-8 text-center text-muted">No posts match.</p>
+    <nav id="pagination" class="mt-8 grid grid-flow-col items-center justify-center gap-2 font-bold"></nav>
+  </section>
+</MainLayout>
+
+<script is:inline>
+  (() => {
+    const params = new URLSearchParams(location.search);
+    const q = (params.get('q') ?? '').trim().toLowerCase();
+    const category = (params.get('category') ?? '').trim();
+    const tag = (params.get('tag') ?? '').trim();
+    const pageSize = 10;
+
+    const input = document.getElementById('q-input');
+    if (input) input.value = params.get('q') ?? '';
+
+    const items = Array.from(document.querySelectorAll('#posts > li'));
+    const matches = items.filter((li) => {
+      const title = li.dataset.title ?? '';
+      const desc = li.dataset.desc ?? '';
+      const cat = li.dataset.category ?? '';
+      const tags = (li.dataset.tags ?? '').split(' ').filter(Boolean);
+      if (q && !title.includes(q) && !desc.includes(q)) return false;
+      if (category && cat !== category) return false;
+      if (tag && !tags.includes(tag)) return false;
+      return true;
+    });
+
+    const totalPages = Math.max(1, Math.ceil(matches.length / pageSize));
+    const page = Math.min(Math.max(1, Number(params.get('page')) || 1), totalPages);
+    const start = (page - 1) * pageSize;
+    matches.forEach((li, i) => {
+      li.hidden = i < start || i >= start + pageSize;
+    });
+
+    const empty = document.getElementById('empty');
+    if (empty) empty.hidden = matches.length !== 0;
+
+    const pagination = document.getElementById('pagination');
+    if (pagination && totalPages > 1) {
+      const base = new URLSearchParams();
+      if (q) base.set('q', params.get('q') ?? '');
+      if (category) base.set('category', category);
+      if (tag) base.set('tag', tag);
+
+      const LINK_CLASS = 'min-w-6 rounded px-2 py-1 text-center no-underline';
+      const CURRENT_CLASS = 'min-w-6 rounded bg-accent px-2 py-1 text-center text-white';
+
+      const makeLink = (n, text) => {
+        const p = new URLSearchParams(base);
+        p.set('page', String(n));
+        const a = document.createElement('a');
+        a.href = `/blog?${p.toString()}`;
+        a.textContent = text;
+        a.className = LINK_CLASS;
+        return a;
+      };
+
+      if (page > 1) pagination.appendChild(makeLink(page - 1, 'Prev'));
+      for (let n = 1; n <= totalPages; n += 1) {
+        if (n === page) {
+          const span = document.createElement('span');
+          span.className = CURRENT_CLASS;
+          span.textContent = String(n);
+          pagination.appendChild(span);
+        } else {
+          pagination.appendChild(makeLink(n, String(n)));
+        }
+      }
+      if (page < totalPages) pagination.appendChild(makeLink(page + 1, 'Next'));
+    }
+  })();
+</script>
