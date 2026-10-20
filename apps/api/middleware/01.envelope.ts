@@ -1,10 +1,14 @@
 import { defineMiddleware } from "void";
 
-function jsonResponse(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
+function jsonResponse(status: number, body: unknown, previous: Response): Response {
+  // Preserve headers set by earlier middleware (e.g. CORS) when replacing the
+  // response body; only the entity headers below are specific to the body.
+  const headers = new Headers(previous.headers);
+  headers.set("content-type", "application/json");
+  headers.delete("content-length");
+  headers.delete("content-encoding");
+  headers.delete("etag");
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 // Wrap every /api/* response in the { code, message, data } envelope.
@@ -41,14 +45,18 @@ export default defineMiddleware(async (c, next) => {
   if (body !== null && typeof body === "object") {
     const obj = body as Record<string, unknown>;
     if ("error" in obj && "issues" in obj) {
-      c.res = jsonResponse(res.status, {
-        code: res.status,
-        message: String(obj.error),
-        data: { issues: obj.issues },
-      });
+      c.res = jsonResponse(
+        res.status,
+        {
+          code: res.status,
+          message: String(obj.error),
+          data: { issues: obj.issues },
+        },
+        res,
+      );
       return;
     }
   }
 
-  c.res = jsonResponse(res.status, { code: res.status, message: "ok", data: body });
+  c.res = jsonResponse(res.status, { code: res.status, message: "ok", data: body }, res);
 });

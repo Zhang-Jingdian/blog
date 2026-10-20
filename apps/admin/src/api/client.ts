@@ -8,6 +8,10 @@ import type {
   TaxonomyKind,
 } from "./types";
 
+// Empty in dev (Vite proxies /api to the local API). In production, point this
+// at the deployed API Worker so the admin SPA (a different origin) can call it.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
 interface Envelope<T> {
   code: number;
   message: string;
@@ -25,7 +29,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init);
+  const res = await fetch(`${API_BASE_URL}${path}`, init);
   let envelope: Envelope<T> | null = null;
   try {
     envelope = (await res.json()) as Envelope<T>;
