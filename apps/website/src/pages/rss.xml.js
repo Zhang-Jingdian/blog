@@ -1,9 +1,9 @@
 import rss from "@astrojs/rss";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
-import { listFullBlogs, renderMarkdown } from "../lib/api";
+import { listFullPosts, renderMarkdown } from "../lib/api";
 
 export async function GET(context) {
-  const posts = await listFullBlogs();
+  const posts = await listFullPosts();
   return rss({
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,

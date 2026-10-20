@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
-import { deletePost, listPosts, updatePostStatus } from "@/api/client";
+import { deletePost, listPosts } from "@/api/client";
 import type { PostListItem } from "@/api/types";
+import defaultCover from "@/assets/defualt-cover.png";
 
 const items = ref<PostListItem[]>([]);
 const total = ref(0);
@@ -51,16 +52,6 @@ function go(n: number) {
   load();
 }
 
-async function toggleStatus(post: PostListItem) {
-  error.value = "";
-  try {
-    await updatePostStatus(post.id, post.status === "published" ? "draft" : "published");
-    await load();
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : "Failed to update status";
-  }
-}
-
 async function remove(post: PostListItem) {
   if (!window.confirm(`Delete "${post.title}"?`)) return;
   error.value = "";
@@ -82,22 +73,21 @@ onMounted(load);
 
 <template>
   <section>
-    <div class="mb-4 grid grid-cols-1 gap-2 xs:grid-cols-[minmax(0,1fr)_auto] xs:items-center">
-      <h1 class="m-0">Posts</h1>
-      <RouterLink to="/posts/new" class="btn justify-self-start">New post</RouterLink>
-    </div>
-
     <form
-      class="mb-6 grid grid-cols-1 gap-2 xs:grid-cols-[auto_minmax(0,1fr)_auto]"
+      class="mb-6 grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-2"
       @submit.prevent="applyFilters"
     >
+      <input v-model="q" type="search" placeholder="Search title or description" class="field" />
+
       <select v-model="status" class="field">
         <option value="all">All</option>
         <option value="draft">Drafts</option>
         <option value="published">Published</option>
       </select>
-      <input v-model="q" type="search" placeholder="Search title or description" class="field" />
+
       <button type="submit" class="btn">Filter</button>
+
+      <RouterLink to="/posts/new" class="btn">New</RouterLink>
     </form>
 
     <p v-if="error" class="text-danger">{{ error }}</p>
@@ -109,8 +99,13 @@ onMounted(load);
       <li
         v-for="post in items"
         :key="post.id"
-        class="grid grid-cols-1 gap-4 border-b border-soft py-4 xs:grid-cols-[minmax(0,1fr)_auto] xs:items-center"
+        class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 border-b border-soft py-4"
       >
+        <img
+          :src="post.coverUrl || defaultCover"
+          alt=""
+          class="h-14 w-20 rounded-md object-contain xs:h-20 xs:w-28"
+        />
         <div class="grid min-w-0 justify-items-start gap-1">
           <RouterLink
             :to="`/posts/${post.id}/edit`"
@@ -120,8 +115,8 @@ onMounted(load);
           </RouterLink>
           <span
             :class="[
-              'rounded-full bg-soft px-2.5 py-0.5 text-xs uppercase tracking-wider',
-              post.status === 'draft' ? 'text-body' : 'text-accent-dark',
+              'rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider',
+              post.status === 'published' ? 'bg-accent text-white' : 'bg-soft text-body',
             ]"
           >
             {{ post.status }}
@@ -131,21 +126,31 @@ onMounted(load);
             {{ formatDate(post.updatedAt) }}
           </span>
         </div>
-        <div class="grid grid-flow-col items-center justify-start gap-3 xs:justify-end">
-          <button class="link" @click="toggleStatus(post)">
-            {{ post.status === "published" ? "Unpublish" : "Publish" }}
+        <div class="grid grid-flow-col items-center justify-end gap-2">
+          <RouterLink
+            :to="`/posts/${post.id}/edit`"
+            class="rounded-md bg-accent px-2.5 py-1 text-sm font-bold text-white no-underline hover:bg-accent-dark"
+          >
+            Edit
+          </RouterLink>
+          <button
+            class="rounded-md bg-danger px-2.5 py-1 text-sm font-bold text-white hover:bg-danger-dark"
+            @click="remove(post)"
+          >
+            Delete
           </button>
-          <RouterLink class="link" :to="`/posts/${post.id}/edit`">Edit</RouterLink>
-          <button class="link text-danger hover:text-danger" @click="remove(post)">Delete</button>
         </div>
       </li>
     </ul>
     <p v-else-if="!loading" class="text-muted">No posts yet.</p>
 
-    <nav v-if="totalPages > 1" class="mt-8 grid grid-flow-col items-center justify-center gap-2">
+    <nav
+      v-if="totalPages > 1"
+      class="mt-8 grid grid-flow-col items-center justify-center gap-2 font-bold"
+    >
       <button
-        class="link disabled:cursor-default disabled:opacity-40"
-        :disabled="page <= 1"
+        v-if="page > 1"
+        class="min-w-6 cursor-pointer rounded px-2 py-1 text-center text-accent"
         @click="go(page - 1)"
       >
         Prev
@@ -154,13 +159,17 @@ onMounted(load);
         <span v-if="n === page" class="min-w-6 rounded bg-accent px-2 py-1 text-center text-white">
           {{ n }}
         </span>
-        <button v-else class="link min-w-6 rounded px-2 py-1 text-center" @click="go(n)">
+        <button
+          v-else
+          class="min-w-6 cursor-pointer rounded px-2 py-1 text-center text-accent"
+          @click="go(n)"
+        >
           {{ n }}
         </button>
       </template>
       <button
-        class="link disabled:cursor-default disabled:opacity-40"
-        :disabled="page >= totalPages"
+        v-if="page < totalPages"
+        class="min-w-6 cursor-pointer rounded px-2 py-1 text-center text-accent"
         @click="go(page + 1)"
       >
         Next

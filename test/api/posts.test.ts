@@ -3,7 +3,7 @@ import { createTestDb, type TestDatabase } from "./helpers/db.ts";
 import { createApp, request, type JsonResponse } from "./helpers/app.ts";
 import { createCategory, createPost, createTag } from "./helpers/seed.ts";
 
-describe("GET /api/blogs", () => {
+describe("GET /api/posts", () => {
   let db: TestDatabase;
   let app: ReturnType<typeof createApp>;
 
@@ -14,7 +14,7 @@ describe("GET /api/blogs", () => {
 
   afterEach(() => db.close());
 
-  async function list(path = "/api/blogs"): Promise<JsonResponse> {
+  async function list(path = "/api/posts"): Promise<JsonResponse> {
     return request(app, path);
   }
 
@@ -52,7 +52,7 @@ describe("GET /api/blogs", () => {
       });
     }
 
-    const res = await list("/api/blogs?page=2&pageSize=2");
+    const res = await list("/api/posts?page=2&pageSize=2");
     const data = res.body.data as {
       items: { slug: string }[];
       page: number;
@@ -82,10 +82,10 @@ describe("GET /api/blogs", () => {
       status: "published",
     });
 
-    const byTitle = await list("/api/blogs?q=hello");
+    const byTitle = await list("/api/posts?q=hello");
     expect((byTitle.body.data as { total: number }).total).toBe(1);
 
-    const byDescription = await list("/api/blogs?q=typescript");
+    const byDescription = await list("/api/posts?q=typescript");
     expect((byDescription.body.data as { total: number }).total).toBe(1);
   });
 
@@ -101,15 +101,15 @@ describe("GET /api/blogs", () => {
     });
     await createPost(db.db, { title: "Uncategorized", slug: "uncategorized", status: "published" });
 
-    const byCategory = await list("/api/blogs?category=tech");
+    const byCategory = await list("/api/posts?category=tech");
     expect((byCategory.body.data as { total: number }).total).toBe(1);
 
-    const byTag = await list("/api/blogs?tag=rust");
+    const byTag = await list("/api/posts?tag=rust");
     expect((byTag.body.data as { total: number }).total).toBe(1);
   });
 });
 
-describe("GET /api/blogs/:slug", () => {
+describe("GET /api/posts/:slug", () => {
   let db: TestDatabase;
   let app: ReturnType<typeof createApp>;
 
@@ -136,7 +136,7 @@ describe("GET /api/blogs/:slug", () => {
       publishedAt: new Date("2026-03-01T12:00:00.000Z"),
     });
 
-    const res = await request(app, "/api/blogs/hello");
+    const res = await request(app, "/api/posts/hello");
     expect(res.status).toBe(200);
     const data = res.body.data as {
       slug: string;
@@ -152,19 +152,19 @@ describe("GET /api/blogs/:slug", () => {
 
   it("returns category null when the post has none", async () => {
     await createPost(db.db, { title: "Lonely", slug: "lonely", status: "published" });
-    const res = await request(app, "/api/blogs/lonely");
+    const res = await request(app, "/api/posts/lonely");
     expect((res.body.data as { category: unknown }).category).toBeNull();
   });
 
   it("does not expose draft posts", async () => {
     await createPost(db.db, { title: "Draft", slug: "draft", status: "draft" });
-    const res = await request(app, "/api/blogs/draft");
+    const res = await request(app, "/api/posts/draft");
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ code: 404, message: "Post not found", data: null });
   });
 
   it("returns 404 for an unknown slug", async () => {
-    const res = await request(app, "/api/blogs/missing");
+    const res = await request(app, "/api/posts/missing");
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ code: 404, message: "Post not found", data: null });
   });

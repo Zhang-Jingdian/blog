@@ -83,6 +83,14 @@ export function updatePostStatus(id: number, status: PostStatus): Promise<Post> 
   return request<Post>(`/api/admin/posts/${id}/status`, jsonInit("PATCH", { status }));
 }
 
+export function uploadCover(file: Blob): Promise<{ url: string }> {
+  return request<{ url: string }>("/api/admin/uploads", {
+    method: "POST",
+    headers: { "content-type": file.type },
+    body: file,
+  });
+}
+
 const taxonomyPath = (kind: TaxonomyKind) => (kind === "tag" ? "tags" : "categories");
 
 export function listTaxonomy(kind: TaxonomyKind): Promise<Taxonomy[]> {

@@ -6,6 +6,6 @@ const year = new Date().getFullYear();
   <footer
     class="grid place-items-center bg-linear-to-b from-soft/50 to-white px-[1em] pt-[2em] pb-[6em] text-center text-muted"
   >
-    © {{ year }} Blog Admin. All rights reserved.
+    © {{ year }} PILL. All rights reserved.
   </footer>
 </template>

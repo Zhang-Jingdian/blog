@@ -4,7 +4,7 @@ import { category, post, postTag, tag } from "@schema";
 import { iso } from "../../../src/lib/date.ts";
 import { publicListQuery } from "../../../src/lib/schemas.ts";
 
-// GET /api/blogs — published posts only, newest first, with search and
+// GET /api/posts — published posts only, newest first, with search and
 // category/tag filters combined by AND.
 export const GET = defineHandler.withValidator({ query: publicListQuery })(async (
   _c,

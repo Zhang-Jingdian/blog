@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
-import { createPost, getPost, listCategories, listTags, updatePost } from "@/api/client";
+import {
+  createPost,
+  getPost,
+  listCategories,
+  listTags,
+  updatePost,
+  uploadCover,
+} from "@/api/client";
 import type { PostInput, PostStatus, Taxonomy } from "@/api/types";
 
 interface PostForm {
   title: string;
   content: string;
-  slug: string;
   description: string;
   coverUrl: string;
   categoryId: number | null;
@@ -26,12 +32,15 @@ const categories = ref<Taxonomy[]>([]);
 const tags = ref<Taxonomy[]>([]);
 const loading = ref(false);
 const saving = ref(false);
+const uploading = ref(false);
 const error = ref("");
+const fileInput = ref<HTMLInputElement | null>(null);
+
+const MAX_COVER_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const form = reactive<PostForm>({
   title: "",
   content: "",
-  slug: "",
   description: "",
   coverUrl: "",
   categoryId: null,
@@ -55,7 +64,6 @@ async function loadPost() {
     const p = await getPost(id);
     form.title = p.title;
     form.content = p.content;
-    form.slug = p.slug;
     form.description = p.description ?? "";
     form.coverUrl = p.coverUrl ?? "";
     form.categoryId = p.categoryId;
@@ -78,13 +86,48 @@ function toggleTag(tagId: number, checked: boolean) {
   form.tagIds = [...set];
 }
 
+async function handleFile(file: File | null | undefined) {
+  if (!file) return;
+  if (!file.type.startsWith("image/")) {
+    error.value = "Please choose an image file";
+    return;
+  }
+  if (file.size > MAX_COVER_SIZE) {
+    error.value = "Image is larger than 5 MB";
+    return;
+  }
+  uploading.value = true;
+  error.value = "";
+  try {
+    const { url } = await uploadCover(file);
+    form.coverUrl = url;
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : "Upload failed";
+  } finally {
+    uploading.value = false;
+  }
+}
+
+function onFileInput(event: Event) {
+  const input = event.target as HTMLInputElement;
+  handleFile(input.files?.[0]);
+  input.value = "";
+}
+
+function onDrop(event: DragEvent) {
+  handleFile(event.dataTransfer?.files?.[0]);
+}
+
+function onPaste(event: ClipboardEvent) {
+  handleFile(event.clipboardData?.files?.[0]);
+}
+
 async function submit() {
   error.value = "";
   saving.value = true;
   const input: PostInput = {
     title: form.title,
     content: form.content,
-    slug: form.slug.trim() || undefined,
     description: form.description.trim() || null,
     coverUrl: form.coverUrl.trim() || null,
     categoryId: form.categoryId,
@@ -111,27 +154,12 @@ onMounted(async () => {
 
 <template>
   <section>
-    <div class="mb-4 grid grid-cols-1 gap-2 xs:grid-cols-[minmax(0,1fr)_auto] xs:items-center">
-      <h1 class="m-0">{{ isEdit ? "Edit post" : "New post" }}</h1>
-      <RouterLink to="/posts" class="link">← Back to posts</RouterLink>
-    </div>
-
     <p v-if="error" class="text-danger">{{ error }}</p>
 
-    <form v-if="!loading" class="grid gap-4" @submit.prevent="submit">
+    <form v-if="!loading" class="grid gap-4" @submit.prevent="submit" @paste="onPaste">
       <label class="grid gap-1 text-body">
         Title
         <input v-model="form.title" required maxlength="200" class="field" />
-      </label>
-
-      <label class="grid gap-1 text-body">
-        Content
-        <textarea v-model="form.content" rows="12" required class="field resize-y"></textarea>
-      </label>
-
-      <label class="grid gap-1 text-body">
-        Slug <span class="font-normal text-muted">(optional, defaults from title)</span>
-        <input v-model="form.slug" placeholder="my-post" class="field" />
       </label>
 
       <label class="grid gap-1 text-body">
@@ -144,10 +172,34 @@ onMounted(async () => {
         ></textarea>
       </label>
 
-      <label class="grid gap-1 text-body">
-        Cover URL
-        <input v-model="form.coverUrl" type="url" placeholder="https://…" class="field" />
-      </label>
+      <fieldset class="grid gap-2">
+        <legend class="px-2 text-body">Cover</legend>
+        <div
+          class="grid cursor-pointer place-items-center gap-2 rounded-md border border-dashed border-soft px-4 py-6 text-center text-muted"
+          role="button"
+          tabindex="0"
+          @click="fileInput?.click()"
+          @keydown.enter.prevent="fileInput?.click()"
+          @dragover.prevent
+          @drop.prevent="onDrop"
+        >
+          <p v-if="uploading">Uploading…</p>
+          <template v-else>
+            <img
+              v-if="form.coverUrl"
+              :src="form.coverUrl"
+              alt="Cover preview"
+              class="max-h-40 rounded-md object-contain"
+            />
+            <p v-else>Drag an image here, paste it, or click to browse</p>
+          </template>
+        </div>
+        <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileInput" />
+        <label class="grid gap-1 text-body">
+          Or enter a Cover URL
+          <input v-model="form.coverUrl" type="url" placeholder="https://…" class="field" />
+        </label>
+      </fieldset>
 
       <label class="grid gap-1 text-body">
         Status
@@ -188,6 +240,11 @@ onMounted(async () => {
           <p v-if="!tags.length" class="text-muted">No tags yet.</p>
         </div>
       </fieldset>
+
+      <label class="grid gap-1 text-body">
+        Content
+        <textarea v-model="form.content" rows="12" required class="field resize-y"></textarea>
+      </label>
 
       <div class="grid grid-flow-col items-center justify-start gap-4">
         <button type="submit" class="btn" :disabled="saving">

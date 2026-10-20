@@ -3,5 +3,5 @@ import TaxonomyManager from "@/components/TaxonomyManager.vue";
 </script>
 
 <template>
-  <TaxonomyManager kind="category" title="Categories" />
+  <TaxonomyManager kind="category" />
 </template>

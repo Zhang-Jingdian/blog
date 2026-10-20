@@ -57,6 +57,7 @@ export const GET = defineHandler.withValidator({ query: adminListQuery })(async 
       title: post.title,
       slug: post.slug,
       status: post.status,
+      coverUrl: post.coverUrl,
       publishedAt: post.publishedAt,
       updatedAt: post.updatedAt,
       categoryName: category.name,
@@ -75,6 +76,7 @@ export const GET = defineHandler.withValidator({ query: adminListQuery })(async 
     title: r.title,
     slug: r.slug,
     status: r.status,
+    coverUrl: r.coverUrl,
     publishedAt: iso(r.publishedAt),
     updatedAt: r.updatedAt.toISOString(),
     category:

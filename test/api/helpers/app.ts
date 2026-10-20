@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import envelope from "../../../apps/api/middleware/01.envelope.ts";
 
-import * as blogsIndex from "../../../apps/api/routes/api/blogs/index.ts";
-import * as blogBySlug from "../../../apps/api/routes/api/blogs/[slug].ts";
+import * as postsIndex from "../../../apps/api/routes/api/posts/index.ts";
+import * as postBySlug from "../../../apps/api/routes/api/posts/[slug].ts";
 import * as adminPostsIndex from "../../../apps/api/routes/api/admin/posts/index.ts";
 import * as adminPostById from "../../../apps/api/routes/api/admin/posts/[id].ts";
 import * as adminPostStatus from "../../../apps/api/routes/api/admin/posts/[id]/status.ts";
@@ -49,8 +49,8 @@ export function createApp(): Hono {
     return c.json({ code: 500, message: "Internal Server Error", data: null }, 500);
   });
 
-  app.get("/api/blogs", route(blogsIndex.GET));
-  app.get("/api/blogs/:slug", route(blogBySlug.GET));
+  app.get("/api/posts", route(postsIndex.GET));
+  app.get("/api/posts/:slug", route(postBySlug.GET));
 
   app.get("/api/admin/posts", route(adminPostsIndex.GET));
   app.post("/api/admin/posts", route(adminPostsIndex.POST));

@@ -13,11 +13,12 @@
   --color-soft: rgb(var(--gray-light));
   --color-body: rgb(var(--gray-dark));
   --color-danger: rgb(180, 60, 60);
+  --color-danger-dark: rgb(140, 40, 40);
 }
 
 @layer components {
   .btn {
-    @apply inline-grid cursor-pointer place-items-center rounded-md bg-accent px-4 py-2 text-base text-white no-underline;
+    @apply inline-grid cursor-pointer place-items-center rounded-md bg-accent px-4 py-2 text-base font-bold text-white no-underline;
   }
   .btn:hover {
     @apply bg-accent-dark;

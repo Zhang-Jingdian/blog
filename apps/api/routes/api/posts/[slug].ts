@@ -4,7 +4,7 @@ import { category, post, postTag, tag } from "@schema";
 import { iso } from "../../../src/lib/date.ts";
 import { AppError } from "../../../src/lib/error.ts";
 
-// GET /api/blogs/:slug — a single published post with its category and tags.
+// GET /api/posts/:slug — a single published post with its category and tags.
 export const GET = defineHandler(async (c) => {
   const slug = c.req.param("slug")!;
 

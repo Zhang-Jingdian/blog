@@ -6,6 +6,7 @@ export interface PostListItem {
   id: number;
   title: string;
   slug: string;
+  coverUrl: string | null;
   status: PostStatus;
   publishedAt: string | null;
   updatedAt: string;

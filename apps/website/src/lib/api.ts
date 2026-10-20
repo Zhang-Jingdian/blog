@@ -1,12 +1,12 @@
 import { marked } from "marked";
 
-// Fetch the blog API. Under SSG this runs at build time, so each page is
+// Fetch the posts API. Under SSG this runs at build time, so each page is
 // generated from a snapshot of the API. Point VITE_API_BASE_URL at a running
 // dev server or a deployed Worker before building.
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5173";
 
-export interface BlogListItem {
+export interface PostListItem {
   id: number;
   title: string;
   slug: string;
@@ -14,7 +14,7 @@ export interface BlogListItem {
   publishedAt: string;
 }
 
-export interface BlogPost extends BlogListItem {
+export interface Post extends PostListItem {
   description: string | null;
   content: string;
   updatedAt: string;
@@ -22,8 +22,8 @@ export interface BlogPost extends BlogListItem {
   tags: { name: string; slug: string }[];
 }
 
-export interface BlogListResult {
-  items: BlogListItem[];
+export interface PostListResult {
+  items: PostListItem[];
   page: number;
   pageSize: number;
   total: number;
@@ -50,7 +50,7 @@ async function get<T>(path: string): Promise<T> {
   return body.data;
 }
 
-export interface BlogListParams {
+export interface PostListParams {
   q?: string;
   category?: string;
   tag?: string;
@@ -58,7 +58,7 @@ export interface BlogListParams {
   pageSize?: number;
 }
 
-export async function listBlogs(params: BlogListParams = {}): Promise<BlogListResult> {
+export async function listPosts(params: PostListParams = {}): Promise<PostListResult> {
   const search = new URLSearchParams();
   if (params.q) search.set("q", params.q);
   if (params.category) search.set("category", params.category);
@@ -66,16 +66,16 @@ export async function listBlogs(params: BlogListParams = {}): Promise<BlogListRe
   if (params.page) search.set("page", String(params.page));
   if (params.pageSize) search.set("pageSize", String(params.pageSize));
   const qs = search.toString();
-  return get<BlogListResult>(`/api/blogs${qs ? `?${qs}` : ""}`);
+  return get<PostListResult>(`/api/posts${qs ? `?${qs}` : ""}`);
 }
 
 // Walk the paginated list to collect every published post (list fields only).
-export async function listAllItems(): Promise<BlogListItem[]> {
-  const items: BlogListItem[] = [];
+export async function listAllPosts(): Promise<PostListItem[]> {
+  const items: PostListItem[] = [];
   let page = 1;
   let totalPages = 1;
   do {
-    const list = await listBlogs({ page, pageSize: 50 });
+    const list = await listPosts({ page, pageSize: 50 });
     items.push(...list.items);
     totalPages = list.totalPages;
     page += 1;
@@ -83,22 +83,22 @@ export async function listAllItems(): Promise<BlogListItem[]> {
   return items;
 }
 
-export async function getBlog(slug: string): Promise<BlogPost | null> {
-  const res = await fetch(`${API_BASE_URL}/api/blogs/${encodeURIComponent(slug)}`);
+export async function getPost(slug: string): Promise<Post | null> {
+  const res = await fetch(`${API_BASE_URL}/api/posts/${encodeURIComponent(slug)}`);
   // 404 → the post doesn't exist (or is a draft); return null so the page can 404.
   if (res.status === 404) return null;
   if (!res.ok) {
-    throw new Error(`API request failed: GET /api/blogs/${slug} → ${res.status}`);
+    throw new Error(`API request failed: GET /api/posts/${slug} → ${res.status}`);
   }
-  const body = (await res.json()) as Envelope<BlogPost>;
+  const body = (await res.json()) as Envelope<Post>;
   return body.data;
 }
 
 // Full posts (with body/category/tags) for consumers that need them, e.g. RSS.
-export async function listFullBlogs(): Promise<BlogPost[]> {
-  const items = await listAllItems();
-  const posts = await Promise.all(items.map((item) => getBlog(item.slug)));
-  return posts.filter((post): post is BlogPost => post !== null);
+export async function listFullPosts(): Promise<Post[]> {
+  const items = await listAllPosts();
+  const posts = await Promise.all(items.map((item) => getPost(item.slug)));
+  return posts.filter((post): post is Post => post !== null);
 }
 
 export function renderMarkdown(content: string): string {

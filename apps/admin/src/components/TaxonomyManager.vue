@@ -3,7 +3,7 @@ import { onMounted, reactive, ref } from "vue";
 import { createTaxonomy, deleteTaxonomy, listTaxonomy, updateTaxonomy } from "@/api/client";
 import type { Taxonomy, TaxonomyInput, TaxonomyKind } from "@/api/types";
 
-const props = defineProps<{ kind: TaxonomyKind; title: string }>();
+const props = defineProps<{ kind: TaxonomyKind }>();
 
 const items = ref<Taxonomy[]>([]);
 const loading = ref(false);
@@ -83,8 +83,6 @@ onMounted(load);
 
 <template>
   <section>
-    <h1>{{ title }}</h1>
-
     <form
       class="my-4 grid grid-cols-1 gap-2 xs:mb-6 xs:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
       @submit.prevent="create"

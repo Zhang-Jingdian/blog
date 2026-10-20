@@ -1,10 +1,10 @@
 ---
 import BlogPostLayout from '../../layouts/BlogPost.astro'
-import type { BlogPost } from '../../lib/api'
-import { listFullBlogs, renderMarkdown } from '../../lib/api'
+import type { Post } from '../../lib/api'
+import { listFullPosts, renderMarkdown } from '../../lib/api'
 
 export async function getStaticPaths() {
-  const posts = await listFullBlogs()
+  const posts = await listFullPosts()
   return posts.map((post) => ({
     params: { slug: post.slug },
     props: { post },
@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 }
 
 interface Props {
-  post: BlogPost
+  post: Post
 }
 
 const { post } = Astro.props

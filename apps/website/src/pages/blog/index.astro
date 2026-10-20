@@ -1,9 +1,10 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro'
 import FormattedDate from '../../components/FormattedDate.astro'
-import { listFullBlogs } from '../../lib/api'
+import defaultCover from '../../assets/defualt-cover.png'
+import { listFullPosts } from '../../lib/api'
 
-const posts = (await listFullBlogs()).map((post) => ({
+const posts = (await listFullPosts()).map((post) => ({
   title: post.title,
   slug: post.slug,
   coverUrl: post.coverUrl,
@@ -16,7 +17,11 @@ const posts = (await listFullBlogs()).map((post) => ({
 
 <MainLayout>
   <section>
-    <form class="mb-8 grid gap-4 xs:grid-cols-[1fr_auto] xs:items-center" method="get" action="/blog">
+    <form
+      class="mb-8 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4"
+      method="get"
+      action="/blog"
+    >
       <input
         type="search"
         name="q"
@@ -26,7 +31,7 @@ const posts = (await listFullBlogs()).map((post) => ({
       />
       <button
         type="submit"
-        class="w-full cursor-pointer rounded bg-accent px-4 py-2 text-base font-bold text-white xs:w-auto"
+        class="cursor-pointer rounded bg-accent px-4 py-2 text-base font-bold text-white"
       >
         Search
       </button>
@@ -45,16 +50,14 @@ const posts = (await listFullBlogs()).map((post) => ({
             rel="noopener noreferrer"
             class="group block text-inherit no-underline"
           >
-            {post.coverUrl && (
-              <div class="mb-2 grid h-40 w-full place-items-center bg-transparent xs:h-50">
-                <img
-                  src={post.coverUrl}
-                  alt=""
-                  loading="lazy"
-                  class="h-auto max-h-40 max-w-full min-w-0 w-auto rounded-lg shadow-(--box-shadow) xs:max-h-50"
-                />
-              </div>
-            )}
+            <div class="mb-2 grid h-40 w-full place-items-center bg-transparent xs:h-50">
+              <img
+                src={post.coverUrl || defaultCover.src}
+                alt=""
+                loading="lazy"
+                class="h-auto max-h-40 max-w-full min-w-0 w-auto rounded-lg shadow-(--box-shadow) xs:max-h-50"
+              />
+            </div>
             <h4 class="m-0 text-center font-bold text-ink group-hover:text-accent">{post.title}</h4>
             <p class="mb-2 mt-1 text-center text-muted">
               <FormattedDate date={new Date(post.publishedAt)} />

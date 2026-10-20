@@ -15,21 +15,25 @@ function isActive(to: string) {
 </script>
 
 <template>
-  <header class="grid bg-white px-[1em] shadow-[0_2px_8px_rgba(var(--black),0.05)]">
-    <nav
-      class="grid grid-flow-row justify-items-start gap-1 py-2 xs:grid-flow-col xs:justify-start xs:gap-0 xs:py-0"
-    >
-      <RouterLink
-        v-for="link in links"
-        :key="link.to"
-        :to="link.to"
-        :class="[
-          'border-b-4 px-2 py-4 text-ink no-underline',
-          isActive(link.to) ? 'border-accent' : 'border-transparent',
-        ]"
-      >
-        {{ link.label }}
-      </RouterLink>
+  <header class="bg-white px-2 shadow-[0_2px_8px_rgba(var(--black),0.05)] xs:px-4">
+    <nav class="grid grid-cols-[1fr_auto] items-center">
+      <h2 class="m-0 text-lg font-bold">
+        <a href="/" class="text-ink no-underline">PILL</a>
+      </h2>
+
+      <div class="grid grid-flow-col items-center">
+        <RouterLink
+          v-for="link in links"
+          :key="link.to"
+          :to="link.to"
+          :class="[
+            'border-b-4 px-2 py-4 text-ink no-underline xs:px-1.5 xs:text-[0.9em]',
+            isActive(link.to) ? 'font-bold border-accent' : 'border-transparent',
+          ]"
+        >
+          {{ link.label }}
+        </RouterLink>
+      </div>
     </nav>
   </header>
 </template>
