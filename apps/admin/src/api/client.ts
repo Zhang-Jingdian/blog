@@ -29,7 +29,9 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, init);
+  // `credentials: "include"` sends the Cloudflare Access CF_Authorization cookie
+  // with every cross-origin call so the browser can authenticate past Access.
+  const res = await fetch(`${API_BASE_URL}${path}`, { ...init, credentials: "include" });
   let envelope: Envelope<T> | null = null;
   try {
     envelope = (await res.json()) as Envelope<T>;
