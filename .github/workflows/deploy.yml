@@ -47,14 +47,14 @@ jobs:
       - name: Deploy API
         if: github.event_name == 'push' || inputs.app == 'all' || inputs.app == 'api'
         working-directory: apps/api
-        run: bunx void deploy
+        run: bunx void deploy --platform cloudflare
 
       - name: Deploy admin
         if: github.event_name == 'push' || inputs.app == 'all' || inputs.app == 'admin'
         working-directory: apps/admin
-        run: bunx vp build && bunx void deploy --dir dist --spa
+        run: bunx vp build && bunx void deploy --dir dist --spa --platform cloudflare
 
       - name: Deploy website
         if: github.event_name == 'push' || inputs.app == 'all' || inputs.app == 'website'
         working-directory: apps/website
-        run: bunx astro build && bunx void deploy --dir dist
+        run: bunx astro build && bunx void deploy --dir dist --platform cloudflare
