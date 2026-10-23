@@ -4,7 +4,7 @@ import { category, post, postTag, tag } from "@schema";
 import { iso } from "../../../../src/lib/date.ts";
 import { AppError } from "../../../../src/lib/error.ts";
 import { adminListQuery, postBody } from "../../../../src/lib/schemas.ts";
-import { slugify } from "../../../../src/lib/slug.ts";
+import { ensureSlug } from "../../../../src/lib/slug.ts";
 
 type Condition = ReturnType<typeof eq>;
 
@@ -90,8 +90,7 @@ export const GET = defineHandler.withValidator({ query: adminListQuery })(async 
 
 // POST /api/admin/posts — create a post with category and tag references.
 export const POST = defineHandler.withValidator({ body: postBody })(async (c, { body }) => {
-  const slug = body.slug ?? slugify(body.title);
-  if (!slug) throw new AppError(400, "Cannot generate a slug from the title");
+  const slug = body.slug ?? ensureSlug(body.title);
   if (await db.select({ id: post.id }).from(post).where(eq(post.slug, slug)).get()) {
     throw new AppError(409, "Slug already exists");
   }

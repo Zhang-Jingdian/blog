@@ -115,7 +115,6 @@ export const PUT = defineHandler.withValidator({ params: idParams, body: postBod
       status,
       categoryId,
       publishedAt: resolvePublishedAt(status, existing.publishedAt),
-      updatedAt: new Date(),
     })
     .where(eq(post.id, id))
     .returning();

@@ -7,9 +7,12 @@ const timestamps = {
   createdAt: timestamp("createdAt")
     .notNull()
     .$defaultFn(() => new Date()),
+  // `$onUpdate` stamps every UPDATE automatically (runtime-only in Drizzle, no
+  // migration), so handlers no longer have to remember to set `updatedAt`.
   updatedAt: timestamp("updatedAt")
     .notNull()
-    .$defaultFn(() => new Date()),
+    .$defaultFn(() => new Date())
+    .$onUpdate(() => new Date()),
 };
 
 export const category = sqliteTable("category", {

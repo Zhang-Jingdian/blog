@@ -20,7 +20,7 @@ export const PATCH = defineHandler.withValidator({
 
   const [row] = await db
     .update(post)
-    .set({ status: body.status, publishedAt, updatedAt: new Date() })
+    .set({ status: body.status, publishedAt })
     .where(eq(post.id, id))
     .returning();
 

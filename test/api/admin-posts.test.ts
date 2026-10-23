@@ -96,14 +96,14 @@ describe("admin posts", () => {
       expect(res.body.message).toBe("Slug already exists");
     });
 
-    it("rejects a title that cannot produce a slug", async () => {
+    it("derives a fallback slug for a title with no slug characters", async () => {
       const res = await request(
         app,
         "/api/admin/posts",
         jsonInit("POST", { title: "纯中文标题", content: "x" }),
       );
-      expect(res.status).toBe(400);
-      expect(res.body.message).toBe("Cannot generate a slug from the title");
+      expect(res.status).toBe(201);
+      expect(res.body.data.slug).toMatch(/^[a-z0-9-]+$/);
     });
 
     it("rejects an unknown category or tag", async () => {

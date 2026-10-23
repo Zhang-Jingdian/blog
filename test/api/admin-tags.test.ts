@@ -66,10 +66,10 @@ describe("admin tags", () => {
       expect(dupSlug.body.message).toBe("Slug already exists");
     });
 
-    it("rejects a name that cannot produce a slug", async () => {
+    it("derives a fallback slug for a name with no slug characters", async () => {
       const res = await request(app, "/api/admin/tags", jsonInit("POST", { name: "中文" }));
-      expect(res.status).toBe(400);
-      expect(res.body.message).toBe("Cannot generate a slug from the name");
+      expect(res.status).toBe(201);
+      expect(res.body.data.slug).toMatch(/^[a-z0-9-]+$/);
     });
   });
 

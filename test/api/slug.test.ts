@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { isValidSlug, slugify } from "../../apps/api/src/lib/slug.ts";
+import { ensureSlug, fallbackSlug, slugify } from "../../apps/api/src/lib/slug.ts";
 
 describe("slugify", () => {
   it("lowercases and replaces non-slug characters with hyphens", () => {
@@ -17,15 +17,21 @@ describe("slugify", () => {
   });
 });
 
-describe("isValidSlug", () => {
-  it("accepts lowercase letters, digits and hyphens", () => {
-    expect(isValidSlug("hello-world-2")).toBe(true);
-    expect(isValidSlug("abc")).toBe(true);
+describe("ensureSlug", () => {
+  it("uses the slugified name when it has slug characters", () => {
+    expect(ensureSlug("Hello World")).toBe("hello-world");
   });
 
-  it("rejects uppercase, underscores and empty strings", () => {
-    expect(isValidSlug("Hello")).toBe(false);
-    expect(isValidSlug("hello_world")).toBe(false);
-    expect(isValidSlug("")).toBe(false);
+  it("falls back to a unique token for names with no slug characters", () => {
+    const slug = ensureSlug("纯中文");
+    expect(slug).toMatch(/^[a-z0-9-]+$/);
+    expect(slug.length).toBeGreaterThan(0);
+    expect(ensureSlug("纯中文")).not.toBe(slug);
+  });
+});
+
+describe("fallbackSlug", () => {
+  it("is a non-empty slug-compatible token", () => {
+    expect(fallbackSlug()).toMatch(/^[a-z0-9-]+$/);
   });
 });

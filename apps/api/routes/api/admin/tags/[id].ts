@@ -1,19 +1,9 @@
 import { defineHandler } from "void";
-import { and, eq, ne, db } from "void/db";
+import { eq, db } from "void/db";
 import { postTag, tag } from "@schema";
 import { AppError } from "../../../../src/lib/error.ts";
 import { idParams, taxonomyBody } from "../../../../src/lib/schemas.ts";
-
-function serialize(row: typeof tag.$inferSelect) {
-  return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
-}
+import { assertTaxonomyUnique, serializeTaxonomy } from "../../../../src/lib/taxonomy.ts";
 
 // PUT /api/admin/tags/:id — slug defaults to the current value.
 export const PUT = defineHandler.withValidator({ params: idParams, body: taxonomyBody })(async (
@@ -24,31 +14,14 @@ export const PUT = defineHandler.withValidator({ params: idParams, body: taxonom
   if (!existing) throw new AppError(404, "Not found");
 
   const slug = body.slug ?? existing.slug;
-  if (
-    await db
-      .select({ id: tag.id })
-      .from(tag)
-      .where(and(eq(tag.slug, slug), ne(tag.id, id)))
-      .get()
-  ) {
-    throw new AppError(409, "Slug already exists");
-  }
-  if (
-    await db
-      .select({ id: tag.id })
-      .from(tag)
-      .where(and(eq(tag.name, body.name), ne(tag.id, id)))
-      .get()
-  ) {
-    throw new AppError(409, "Name already exists");
-  }
+  await assertTaxonomyUnique(tag, body.name, slug, id);
 
   const [row] = await db
     .update(tag)
-    .set({ name: body.name, slug, description: body.description ?? null, updatedAt: new Date() })
+    .set({ name: body.name, slug, description: body.description ?? null })
     .where(eq(tag.id, id))
     .returning();
-  return serialize(row);
+  return serializeTaxonomy(row);
 });
 
 // DELETE /api/admin/tags/:id

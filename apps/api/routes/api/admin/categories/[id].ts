@@ -1,19 +1,9 @@
 import { defineHandler } from "void";
-import { and, count, eq, ne, db } from "void/db";
+import { count, eq, db } from "void/db";
 import { category, post } from "@schema";
 import { AppError } from "../../../../src/lib/error.ts";
 import { idParams, taxonomyBody } from "../../../../src/lib/schemas.ts";
-
-function serialize(row: typeof category.$inferSelect) {
-  return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
-}
+import { assertTaxonomyUnique, serializeTaxonomy } from "../../../../src/lib/taxonomy.ts";
 
 // PUT /api/admin/categories/:id — slug defaults to the current value.
 export const PUT = defineHandler.withValidator({ params: idParams, body: taxonomyBody })(async (
@@ -24,31 +14,14 @@ export const PUT = defineHandler.withValidator({ params: idParams, body: taxonom
   if (!existing) throw new AppError(404, "Not found");
 
   const slug = body.slug ?? existing.slug;
-  if (
-    await db
-      .select({ id: category.id })
-      .from(category)
-      .where(and(eq(category.slug, slug), ne(category.id, id)))
-      .get()
-  ) {
-    throw new AppError(409, "Slug already exists");
-  }
-  if (
-    await db
-      .select({ id: category.id })
-      .from(category)
-      .where(and(eq(category.name, body.name), ne(category.id, id)))
-      .get()
-  ) {
-    throw new AppError(409, "Name already exists");
-  }
+  await assertTaxonomyUnique(category, body.name, slug, id);
 
   const [row] = await db
     .update(category)
-    .set({ name: body.name, slug, description: body.description ?? null, updatedAt: new Date() })
+    .set({ name: body.name, slug, description: body.description ?? null })
     .where(eq(category.id, id))
     .returning();
-  return serialize(row);
+  return serializeTaxonomy(row);
 });
 
 // DELETE /api/admin/categories/:id — uncategorize its posts and report how many.
