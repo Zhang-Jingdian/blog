@@ -3,9 +3,7 @@ import { type AnySQLiteTable } from "void/schema-d1";
 import { category } from "@schema";
 import { AppError } from "./error.ts";
 
-// `category` and `tag` share an identical column shape, so `category`'s type is
-// used as the stand-in after a one-time cast (Drizzle table types are nominal,
-// but the SQL only depends on the shared column/table names).
+// `category` and `tag` share a column shape; use `category`'s type after a cast.
 type TaxonomyTable = typeof category;
 
 type TaxonomyRow = {

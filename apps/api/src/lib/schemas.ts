@@ -71,5 +71,11 @@ export const adminListQuery = v.object({
 });
 export type AdminListQuery = v.InferOutput<typeof adminListQuery>;
 
+export const paginationQuery = v.object({
+  page: v.optional(intParam),
+  pageSize: v.optional(pageSizeParam),
+});
+export type PaginationQuery = v.InferOutput<typeof paginationQuery>;
+
 export const idParams = v.object({ id: intParam });
 export type IdParams = v.InferOutput<typeof idParams>;

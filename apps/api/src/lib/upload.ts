@@ -1,7 +1,4 @@
-// Image upload validation: allowed content types and their magic-number checks.
-// The magic bytes verify the body actually matches the declared content type,
-// so a spoofed `Content-Type` header alone cannot store arbitrary bytes.
-
+// Upload validation: allowed types verified by magic bytes, not just the Content-Type header.
 export const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
 export const IMAGE_EXT: Record<string, string> = {
@@ -37,8 +34,39 @@ const MAGIC: Record<string, (b: Uint8Array) => boolean> = {
   },
 };
 
-// Returns true when the body's leading bytes match the declared content type.
 export function matchesImageMagic(contentType: string, bytes: Uint8Array): boolean {
   const check = MAGIC[contentType];
   return check ? check(bytes) : false;
+}
+
+export interface UploadObject {
+  key: string;
+  size: number;
+  uploaded: Date;
+  contentType?: string | null;
+}
+
+export interface UploadItem {
+  key: string;
+  size: number;
+  uploaded: string;
+  contentType: string | null;
+}
+
+// Sort newest-first and paginate (R2 lists keys lexicographically, not by upload order).
+export function paginateUploads(
+  objects: UploadObject[],
+  page: number,
+  pageSize: number,
+): { items: UploadItem[]; page: number; pageSize: number; total: number; totalPages: number } {
+  const sorted = [...objects].sort((a, b) => b.uploaded.getTime() - a.uploaded.getTime());
+  const total = sorted.length;
+  const start = (page - 1) * pageSize;
+  const items = sorted.slice(start, start + pageSize).map((o) => ({
+    key: o.key,
+    size: o.size,
+    uploaded: o.uploaded.toISOString(),
+    contentType: o.contentType ?? null,
+  }));
+  return { items, page, pageSize, total, totalPages: Math.ceil(total / pageSize) };
 }

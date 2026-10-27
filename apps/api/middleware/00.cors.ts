@@ -1,11 +1,8 @@
 import { defineMiddleware } from "void";
+import { env } from "../env.ts";
 
-// The admin SPA lives on a different origin (https://admin.pill001.com) and
-// calls /api/admin/* with credentials (the Cloudflare Access CF_Authorization
-// cookie), so those routes need a specific origin + credentials instead of the
-// wildcard. The public /api/posts and /api/files routes keep the wildcard.
-const ADMIN_ORIGIN = "https://admin.pill001.com";
-
+// Admin routes are called cross-origin with the Cloudflare Access cookie, so
+// they need a specific origin + credentials; public routes keep the wildcard.
 const BASE_HEADERS = {
   "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
@@ -16,7 +13,7 @@ function corsHeaders(path: string): Record<string, string> {
   if (path.startsWith("/api/admin/")) {
     return {
       ...BASE_HEADERS,
-      "Access-Control-Allow-Origin": ADMIN_ORIGIN,
+      "Access-Control-Allow-Origin": env.ADMIN_ORIGIN,
       "Access-Control-Allow-Credentials": "true",
     };
   }

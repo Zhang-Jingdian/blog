@@ -5,6 +5,7 @@ import { iso } from "../../../../src/lib/date.ts";
 import { AppError } from "../../../../src/lib/error.ts";
 import { adminListQuery, postBody } from "../../../../src/lib/schemas.ts";
 import { ensureSlug } from "../../../../src/lib/slug.ts";
+import { resolveRefs, slugExists, toPostObject } from "../../../../src/lib/post.ts";
 
 type Condition = ReturnType<typeof eq>;
 
@@ -91,26 +92,13 @@ export const GET = defineHandler.withValidator({ query: adminListQuery })(async 
 // POST /api/admin/posts — create a post with category and tag references.
 export const POST = defineHandler.withValidator({ body: postBody })(async (c, { body }) => {
   const slug = body.slug ?? ensureSlug(body.title);
-  if (await db.select({ id: post.id }).from(post).where(eq(post.slug, slug)).get()) {
-    throw new AppError(409, "Slug already exists");
-  }
+  if (await slugExists(slug)) throw new AppError(409, "Slug already exists");
 
-  const categoryId = body.categoryId ?? null;
-  if (
-    categoryId !== null &&
-    !(await db.select({ id: category.id }).from(category).where(eq(category.id, categoryId)).get())
-  ) {
-    throw new AppError(400, "Category not found");
-  }
-  const tagIds = [...new Set(body.tagIds ?? [])];
-  if (tagIds.length > 0) {
-    const found = await db.select({ id: tag.id }).from(tag).where(inArray(tag.id, tagIds)).all();
-    if (found.length !== tagIds.length) throw new AppError(400, "Tag not found");
-  }
+  const { categoryId, tagIds } = await resolveRefs(body.categoryId, body.tagIds);
 
   const status = body.status ?? "draft";
   // D1 has no interactive transactions, so the post and its links are written
-  // sequentially. `tagIds` are validated to exist above.
+  // sequentially. `tagIds` are validated to exist in `resolveRefs`.
   const [row] = await db
     .insert(post)
     .values({
@@ -128,21 +116,5 @@ export const POST = defineHandler.withValidator({ body: postBody })(async (c, { 
     await db.insert(postTag).values(tagIds.map((tagId) => ({ postId: row.id, tagId })));
   }
 
-  return c.json(
-    {
-      id: row.id,
-      title: row.title,
-      slug: row.slug,
-      description: row.description,
-      content: row.content,
-      coverUrl: row.coverUrl,
-      status: row.status,
-      categoryId: row.categoryId,
-      publishedAt: iso(row.publishedAt),
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
-      tagIds,
-    },
-    201,
-  );
+  return c.json(toPostObject(row, tagIds), 201);
 });
