@@ -4,7 +4,7 @@ import { marked } from "marked";
 // generated from a snapshot of the API. Point VITE_API_BASE_URL at a running
 // dev server or a deployed Worker before building.
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5173";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 export interface PostListItem {
   id: number;

@@ -4,10 +4,15 @@ import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
+import { loadEnv } from "vite";
+
+// `site` only affects build output (sitemap, canonical URLs, RSS links), so
+// read the production value from .env.production.
+const env = loadEnv("production", process.cwd(), "");
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://pill001.com",
+  site: env.VITE_SITE_URL || "http://localhost:4321",
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],

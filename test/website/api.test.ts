@@ -6,7 +6,7 @@ import {
   renderMarkdown,
 } from "../../apps/website/src/lib/api.ts";
 
-const BASE = "http://localhost:5173";
+const BASE = "";
 
 function jsonEnvelope<T>(code: number, data: T, status = 200): Response {
   return new Response(JSON.stringify({ code, message: "ok", data }), {
@@ -30,7 +30,7 @@ describe("website listPosts", () => {
 
     const url = fetchMock.mock.calls[0][0] as string;
     expect(url).toContain(`${BASE}/api/posts?`);
-    const parsed = new URL(url);
+    const parsed = new URL(url, "http://x");
     expect(parsed.searchParams.get("q")).toBe("hello");
     expect(parsed.searchParams.get("category")).toBe("tech");
     expect(parsed.searchParams.get("tag")).toBe("rust");

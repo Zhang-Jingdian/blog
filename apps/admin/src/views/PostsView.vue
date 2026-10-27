@@ -3,7 +3,7 @@ import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 import { deletePost, listPosts } from "@/api/client";
 import type { PostListItem } from "@/api/types";
-import defaultCover from "@/assets/defualt-cover.png";
+import defaultCover from "@/assets/default-cover.png";
 
 const items = ref<PostListItem[]>([]);
 const total = ref(0);

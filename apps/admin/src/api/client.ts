@@ -2,7 +2,6 @@ import type {
   Post,
   PostInput,
   PostListResult,
-  PostStatus,
   Taxonomy,
   TaxonomyInput,
   TaxonomyKind,
@@ -83,10 +82,6 @@ export function updatePost(id: number, input: PostInput): Promise<Post> {
 
 export function deletePost(id: number): Promise<{ deleted: boolean }> {
   return request<{ deleted: boolean }>(`/api/admin/posts/${id}`, { method: "DELETE" });
-}
-
-export function updatePostStatus(id: number, status: PostStatus): Promise<Post> {
-  return request<Post>(`/api/admin/posts/${id}/status`, jsonInit("PATCH", { status }));
 }
 
 export function uploadCover(file: Blob): Promise<{ url: string }> {

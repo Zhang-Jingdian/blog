@@ -12,7 +12,6 @@
     "format": "vp fmt src/"
   },
   "dependencies": {
-    "pinia": "^4.0.3",
     "vue": "rc",
     "vue-router": "^5.3.1"
   },
