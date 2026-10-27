@@ -12,7 +12,7 @@ const env = loadEnv("production", process.cwd(), "");
 
 // https://astro.build/config
 export default defineConfig({
-  site: env.VITE_SITE_URL || "http://localhost:4321",
+  site: env.VITE_SITE_URL,
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
