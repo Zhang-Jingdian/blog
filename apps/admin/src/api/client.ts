@@ -7,8 +7,8 @@ import type {
   TaxonomyKind,
 } from "./types";
 
-// Empty in dev (Vite proxies /api to the local API). In production, point this
-// at the deployed API Worker so the admin SPA (a different origin) can call it.
+// Empty in dev (Vite proxies /api to the local API); production sets
+// VITE_API_BASE_URL via CI (.github/workflows/deploy.yml) to the deployed API Worker.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
 interface Envelope<T> {

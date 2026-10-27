@@ -29,5 +29,4 @@ dist
 .void-wrangler.jsonc
 .env.*
 !.env.example
-!.env.production
 *.tsbuildinfo

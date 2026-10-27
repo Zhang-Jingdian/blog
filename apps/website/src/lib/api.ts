@@ -1,10 +1,9 @@
 import { marked } from "marked";
 
 // Fetch the posts API. Under SSG this runs at build time, so each page is
-// generated from a snapshot of the API. Point VITE_API_BASE_URL at a running
-// dev server or a deployed Worker before building.
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+// generated from a snapshot of the API. Dev defaults to the local API
+// (http://localhost:5173); production sets VITE_API_BASE_URL via CI.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5173";
 
 export interface PostListItem {
   id: number;

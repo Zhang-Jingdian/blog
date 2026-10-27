@@ -6,13 +6,14 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import { loadEnv } from "vite";
 
-// `site` only affects build output (sitemap, canonical URLs, RSS links), so
-// read the production value from .env.production.
+// `site` only affects build output (sitemap, canonical URLs, RSS links). The
+// production domain is injected by CI (.github/workflows/deploy.yml); fall back
+// to the local dev server otherwise.
 const env = loadEnv("production", process.cwd(), "");
 
 // https://astro.build/config
 export default defineConfig({
-  site: env.VITE_SITE_URL,
+  site: env.VITE_SITE_URL || "http://localhost:4321",
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],

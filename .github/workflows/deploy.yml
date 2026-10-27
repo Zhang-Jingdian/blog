@@ -57,9 +57,14 @@ jobs:
       - name: Deploy admin
         if: github.event_name == 'push' || inputs.app == 'all' || inputs.app == 'admin'
         working-directory: apps/admin
+        env:
+          VITE_API_BASE_URL: https://api.pill001.com
         run: bunx vp build && bunx void deploy --dir dist --spa --platform cloudflare
 
       - name: Deploy website
         if: github.event_name == 'push' || inputs.app == 'all' || inputs.app == 'website'
         working-directory: apps/website
+        env:
+          VITE_API_BASE_URL: https://api.pill001.com
+          VITE_SITE_URL: https://pill001.com
         run: bunx astro build && bunx void deploy --dir dist --platform cloudflare
