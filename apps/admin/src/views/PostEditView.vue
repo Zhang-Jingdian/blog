@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { nextTick, onMounted, reactive, ref } from "vue";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import {
   createPost,
@@ -7,7 +7,7 @@ import {
   listCategories,
   listTags,
   updatePost,
-  uploadCover,
+  uploadImage,
 } from "@/api/client";
 import type { PostInput, PostStatus, Taxonomy } from "@/api/types";
 
@@ -33,10 +33,13 @@ const tags = ref<Taxonomy[]>([]);
 const loading = ref(false);
 const saving = ref(false);
 const uploading = ref(false);
+const insertingImage = ref(false);
 const error = ref("");
 const fileInput = ref<HTMLInputElement | null>(null);
+const contentInput = ref<HTMLTextAreaElement | null>(null);
+const contentFileInput = ref<HTMLInputElement | null>(null);
 
-const MAX_COVER_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const form = reactive<PostForm>({
   title: "",
@@ -86,26 +89,32 @@ function toggleTag(tagId: number, checked: boolean) {
   form.tagIds = [...set];
 }
 
-async function handleFile(file: File | null | undefined) {
-  if (!file) return;
+// Validate and upload a single image; returns the served URL or null on failure.
+async function uploadFile(file: File | null | undefined): Promise<string | null> {
+  if (!file) return null;
   if (!file.type.startsWith("image/")) {
     error.value = "Please choose an image file";
-    return;
+    return null;
   }
-  if (file.size > MAX_COVER_SIZE) {
+  if (file.size > MAX_IMAGE_SIZE) {
     error.value = "Image is larger than 5 MB";
-    return;
+    return null;
   }
-  uploading.value = true;
   error.value = "";
   try {
-    const { url } = await uploadCover(file);
-    form.coverUrl = url;
+    const { url } = await uploadImage(file);
+    return url;
   } catch (e) {
     error.value = e instanceof Error ? e.message : "Upload failed";
-  } finally {
-    uploading.value = false;
+    return null;
   }
+}
+
+async function handleFile(file: File | null | undefined) {
+  uploading.value = true;
+  const url = await uploadFile(file);
+  uploading.value = false;
+  if (url) form.coverUrl = url;
 }
 
 function onFileInput(event: Event) {
@@ -120,6 +129,46 @@ function onDrop(event: DragEvent) {
 
 function onPaste(event: ClipboardEvent) {
   handleFile(event.clipboardData?.files?.[0]);
+}
+
+// Insert a Markdown snippet at the cursor in the content textarea.
+function insertMarkdown(text: string) {
+  const el = contentInput.value;
+  if (!el) {
+    form.content += text;
+    return;
+  }
+  const start = el.selectionStart ?? form.content.length;
+  const end = el.selectionEnd ?? form.content.length;
+  form.content = form.content.slice(0, start) + text + form.content.slice(end);
+  nextTick(() => {
+    el.focus();
+    const pos = start + text.length;
+    el.setSelectionRange(pos, pos);
+  });
+}
+
+async function insertImage(file: File | null | undefined) {
+  insertingImage.value = true;
+  const url = await uploadFile(file);
+  insertingImage.value = false;
+  if (!url) return;
+  const alt = file?.name.replace(/\.[^.]+$/, "") || "image";
+  insertMarkdown(`![${alt}](${url})`);
+}
+
+function onContentFileInput(event: Event) {
+  const input = event.target as HTMLInputElement;
+  insertImage(input.files?.[0]);
+  input.value = "";
+}
+
+function onContentPaste(event: ClipboardEvent) {
+  const file = event.clipboardData?.files?.[0];
+  if (file) {
+    event.preventDefault();
+    insertImage(file);
+  }
 }
 
 async function submit() {
@@ -241,10 +290,35 @@ onMounted(async () => {
         </div>
       </fieldset>
 
-      <label class="grid gap-1 text-body">
-        Content
-        <textarea v-model="form.content" rows="12" required class="field resize-y"></textarea>
-      </label>
+      <div class="grid gap-1">
+        <div class="flex items-center justify-between">
+          <span class="text-body">Content</span>
+          <button
+            type="button"
+            class="btn"
+            :disabled="insertingImage"
+            @click="contentFileInput?.click()"
+          >
+            {{ insertingImage ? "Inserting…" : "Add image" }}
+          </button>
+        </div>
+        <textarea
+          ref="contentInput"
+          v-model="form.content"
+          rows="12"
+          required
+          class="field resize-y"
+          @paste.stop="onContentPaste"
+        ></textarea>
+        <input
+          ref="contentFileInput"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="onContentFileInput"
+        />
+        <p class="m-0 text-muted">Tip: paste an image here to insert it into the content.</p>
+      </div>
 
       <div class="grid grid-flow-col items-center justify-start gap-4">
         <button type="submit" class="btn" :disabled="saving">

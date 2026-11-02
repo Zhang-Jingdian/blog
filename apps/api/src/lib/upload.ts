@@ -1,3 +1,5 @@
+import { AppError } from "./error.ts";
+
 // Upload validation: allowed types verified by magic bytes, not just the Content-Type header.
 export const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -37,6 +39,24 @@ const MAGIC: Record<string, (b: Uint8Array) => boolean> = {
 export function matchesImageMagic(contentType: string, bytes: Uint8Array): boolean {
   const check = MAGIC[contentType];
   return check ? check(bytes) : false;
+}
+
+// Validate an uploaded image from its declared content type and raw bytes,
+// returning the normalized content type and file extension. Throws AppError on
+// an unsupported type, empty body, oversized body, or mismatched signature.
+export function parseUploadedImage(
+  rawContentType: string,
+  bytes: ArrayBufferLike,
+): { contentType: string; ext: string } {
+  const contentType = rawContentType.split(";")[0]?.trim().toLowerCase() ?? "";
+  const ext = IMAGE_EXT[contentType];
+  if (!ext) throw new AppError(415, "Unsupported image type");
+  if (bytes.byteLength === 0) throw new AppError(400, "Empty file");
+  if (bytes.byteLength > MAX_SIZE) throw new AppError(413, "Image too large");
+  if (!matchesImageMagic(contentType, new Uint8Array(bytes))) {
+    throw new AppError(415, "File content does not match its declared image type");
+  }
+  return { contentType, ext };
 }
 
 export interface UploadObject {

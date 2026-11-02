@@ -77,5 +77,12 @@ export const paginationQuery = v.object({
 });
 export type PaginationQuery = v.InferOutput<typeof paginationQuery>;
 
+export const uploadListQuery = v.object({
+  q: v.optional(v.pipe(v.string(), v.maxLength(100))),
+  page: v.optional(intParam),
+  pageSize: v.optional(pageSizeParam),
+});
+export type UploadListQuery = v.InferOutput<typeof uploadListQuery>;
+
 export const idParams = v.object({ id: intParam });
 export type IdParams = v.InferOutput<typeof idParams>;

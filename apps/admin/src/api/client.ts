@@ -5,6 +5,7 @@ import type {
   Taxonomy,
   TaxonomyInput,
   TaxonomyKind,
+  UploadListResult,
 } from "./types";
 
 // Empty in dev (Vite proxies /api to the local API); production sets
@@ -84,12 +85,44 @@ export function deletePost(id: number): Promise<{ deleted: boolean }> {
   return request<{ deleted: boolean }>(`/api/admin/posts/${id}`, { method: "DELETE" });
 }
 
-export function uploadCover(file: Blob): Promise<{ url: string }> {
+export function uploadImage(file: Blob): Promise<{ url: string }> {
   return request<{ url: string }>("/api/admin/uploads", {
     method: "POST",
     headers: { "content-type": file.type },
     body: file,
   });
+}
+
+export function listUploads(query?: {
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<UploadListResult> {
+  const params = new URLSearchParams();
+  if (query?.q) params.set("q", query.q);
+  if (query?.page && query.page > 1) params.set("page", String(query.page));
+  if (query?.pageSize) params.set("pageSize", String(query.pageSize));
+  const qs = params.toString();
+  return request<UploadListResult>(`/api/admin/uploads${qs ? `?${qs}` : ""}`);
+}
+
+export function deleteUpload(key: string): Promise<{ deleted: boolean }> {
+  return request<{ deleted: boolean }>(`/api/admin/uploads/${encodeURIComponent(key)}`, {
+    method: "DELETE",
+  });
+}
+
+export function replaceUpload(key: string, file: Blob): Promise<{ url: string }> {
+  return request<{ url: string }>(`/api/admin/uploads/${encodeURIComponent(key)}`, {
+    method: "PUT",
+    headers: { "content-type": file.type },
+    body: file,
+  });
+}
+
+// Builds the public URL for an uploaded object (dev-proxied path or absolute).
+export function fileUrl(key: string): string {
+  return `${API_BASE_URL}/api/files/${encodeURIComponent(key)}`;
 }
 
 const taxonomyPath = (kind: TaxonomyKind) => (kind === "tag" ? "tags" : "categories");

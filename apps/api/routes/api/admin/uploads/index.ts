@@ -1,12 +1,9 @@
 import { defineHandler } from "void";
 import { storage } from "void/storage";
-import { AppError } from "../../../../src/lib/error.ts";
-import { paginationQuery } from "../../../../src/lib/schemas.ts";
+import { uploadListQuery } from "../../../../src/lib/schemas.ts";
 import {
-  IMAGE_EXT,
-  MAX_SIZE,
-  matchesImageMagic,
   paginateUploads,
+  parseUploadedImage,
   type UploadObject,
 } from "../../../../src/lib/upload.ts";
 
@@ -14,13 +11,15 @@ import {
 // 1000 and returns a cursor for the rest).
 const MAX_LIST_OBJECTS = 5000;
 
-// GET /api/admin/uploads — list uploaded objects, newest first.
-export const GET = defineHandler.withValidator({ query: paginationQuery })(async (
+// GET /api/admin/uploads — list uploaded objects, newest first, optionally
+// filtered by a case-insensitive substring of the key.
+export const GET = defineHandler.withValidator({ query: uploadListQuery })(async (
   _c,
   { query },
 ) => {
   const page = query.page ?? 1;
   const pageSize = query.pageSize ?? 20;
+  const q = query.q?.trim().toLowerCase();
 
   const objects: UploadObject[] = [];
   let cursor: string | undefined;
@@ -37,22 +36,14 @@ export const GET = defineHandler.withValidator({ query: paginationQuery })(async
     cursor = res.truncated ? res.cursor : undefined;
   } while (cursor && objects.length < MAX_LIST_OBJECTS);
 
-  return paginateUploads(objects, page, pageSize);
+  const filtered = q ? objects.filter((o) => o.key.toLowerCase().includes(q)) : objects;
+  return paginateUploads(filtered, page, pageSize);
 });
 
-// POST /api/admin/uploads — store a cover image in R2 and return its URL.
+// POST /api/admin/uploads — store an image (cover or inline) in R2 and return its URL.
 export const POST = defineHandler(async (c) => {
-  const raw = c.req.header("content-type") ?? "";
-  const contentType = raw.split(";")[0]?.trim().toLowerCase() ?? "";
-  const ext = IMAGE_EXT[contentType];
-  if (!ext) throw new AppError(415, "Unsupported image type");
-
   const bytes = await c.req.arrayBuffer();
-  if (bytes.byteLength === 0) throw new AppError(400, "Empty file");
-  if (bytes.byteLength > MAX_SIZE) throw new AppError(413, "Image too large");
-  if (!matchesImageMagic(contentType, new Uint8Array(bytes))) {
-    throw new AppError(415, "File content does not match its declared image type");
-  }
+  const { contentType, ext } = parseUploadedImage(c.req.header("content-type") ?? "", bytes);
 
   const key = `cover-${crypto.randomUUID()}.${ext}`;
   await storage.put(key, bytes, { httpMetadata: { contentType } });

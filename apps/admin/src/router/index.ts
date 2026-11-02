@@ -3,6 +3,7 @@ import PostsView from "@/views/PostsView.vue";
 import PostEditView from "@/views/PostEditView.vue";
 import TagsView from "@/views/TagsView.vue";
 import CategoriesView from "@/views/CategoriesView.vue";
+import MediaView from "@/views/MediaView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,6 +14,7 @@ const router = createRouter({
     { path: "/posts/:id/edit", name: "post-edit", component: PostEditView },
     { path: "/tags", name: "tags", component: TagsView },
     { path: "/categories", name: "categories", component: CategoriesView },
+    { path: "/media", name: "media", component: MediaView },
   ],
 });
 

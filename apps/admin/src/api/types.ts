@@ -62,3 +62,18 @@ export interface TaxonomyInput {
   slug?: string;
   description?: string | null;
 }
+
+export interface UploadItem {
+  key: string;
+  size: number;
+  uploaded: string;
+  contentType: string | null;
+}
+
+export interface UploadListResult {
+  items: UploadItem[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}

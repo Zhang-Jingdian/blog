@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { ApiError, getPost, listPosts, uploadCover } from "../../apps/admin/src/api/client.ts";
+import {
+  ApiError,
+  deleteUpload,
+  fileUrl,
+  getPost,
+  listPosts,
+  listUploads,
+  replaceUpload,
+  uploadImage,
+} from "../../apps/admin/src/api/client.ts";
 
 function jsonEnvelope<T>(code: number, data: T, status = 200): Response {
   return new Response(JSON.stringify({ code, message: "ok", data }), {
@@ -73,7 +82,7 @@ describe("admin request envelope", () => {
   });
 });
 
-describe("admin uploadCover", () => {
+describe("admin uploadImage", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("POSTs the file body with its content type", async () => {
@@ -83,7 +92,7 @@ describe("admin uploadCover", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const file = new Blob(["img"], { type: "image/png" });
-    await expect(uploadCover(file)).resolves.toEqual({
+    await expect(uploadImage(file)).resolves.toEqual({
       url: "http://localhost:5173/api/files/cover-1.png",
     });
 
@@ -92,5 +101,58 @@ describe("admin uploadCover", () => {
     expect(init.method).toBe("POST");
     expect((init.headers as Record<string, string>)["content-type"]).toBe("image/png");
     expect(init.body).toBe(file);
+  });
+});
+
+describe("admin uploads library", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("listUploads builds query params and unwraps the list", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        jsonEnvelope(200, { items: [], page: 2, pageSize: 24, total: 0, totalPages: 0 }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await listUploads({ q: "cover", page: 2, pageSize: 24 });
+
+    const url = fetchMock.mock.calls[0][0] as string;
+    const parsed = new URL(url, "http://x");
+    expect(parsed.pathname).toBe("/api/admin/uploads");
+    expect(parsed.searchParams.get("q")).toBe("cover");
+    expect(parsed.searchParams.get("page")).toBe("2");
+    expect(parsed.searchParams.get("pageSize")).toBe("24");
+  });
+
+  it("deleteUpload sends DELETE to the keyed path", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonEnvelope(200, { deleted: true }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await deleteUpload("cover-1.png");
+
+    const [path, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(path).toBe("/api/admin/uploads/cover-1.png");
+    expect(init.method).toBe("DELETE");
+  });
+
+  it("replaceUpload sends PUT with the file body and content type", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonEnvelope(200, { url: "/api/files/cover-1.png" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const file = new Blob(["img"], { type: "image/jpeg" });
+    await replaceUpload("cover-1.png", file);
+
+    const [path, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(path).toBe("/api/admin/uploads/cover-1.png");
+    expect(init.method).toBe("PUT");
+    expect((init.headers as Record<string, string>)["content-type"]).toBe("image/jpeg");
+    expect(init.body).toBe(file);
+  });
+
+  it("fileUrl builds a dev-proxied path when API_BASE_URL is empty", () => {
+    expect(fileUrl("cover-1.png")).toBe("/api/files/cover-1.png");
   });
 });

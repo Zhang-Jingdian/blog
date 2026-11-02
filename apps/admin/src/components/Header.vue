@@ -7,6 +7,7 @@ const links = [
   { to: "/posts", label: "Posts" },
   { to: "/tags", label: "Tags" },
   { to: "/categories", label: "Categories" },
+  { to: "/media", label: "Media" },
 ];
 
 function isActive(to: string) {
