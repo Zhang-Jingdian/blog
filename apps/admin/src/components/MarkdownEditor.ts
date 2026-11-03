@@ -12,6 +12,7 @@ import {
   ListsToggle,
   UndoRedo,
   codeBlockPlugin,
+  codeMirrorPlugin,
   headingsPlugin,
   imagePlugin,
   linkDialogPlugin,
@@ -30,6 +31,38 @@ export interface MarkdownEditorProps {
   onChange: (markdown: string) => void;
   imageUploadHandler: (file: File) => Promise<string>;
 }
+
+// Languages offered in the code-block language dropdown. Keys are matched by
+// name/alias/extension against @codemirror/language-data, so unknown fences
+// still render and their syntax is loaded on demand.
+const codeBlockLanguages: Record<string, string> = {
+  js: "JavaScript",
+  jsx: "JavaScript (React)",
+  ts: "TypeScript",
+  tsx: "TypeScript (React)",
+  css: "CSS",
+  scss: "SCSS",
+  html: "HTML",
+  xml: "XML",
+  json: "JSON",
+  yaml: "YAML",
+  bash: "Bash",
+  shell: "Shell",
+  python: "Python",
+  java: "Java",
+  c: "C",
+  cpp: "C++",
+  cs: "C#",
+  go: "Go",
+  rust: "Rust",
+  ruby: "Ruby",
+  php: "PHP",
+  sql: "SQL",
+  markdown: "Markdown",
+  dockerfile: "Dockerfile",
+  graphql: "GraphQL",
+  diff: "Diff",
+};
 
 // MDXEditor 4.x ships no default toolbar, so we compose one explicitly.
 const toolbarContents = (): ReactNode =>
@@ -62,6 +95,7 @@ export function MarkdownEditor(props: MarkdownEditorProps): ReactNode {
       thematicBreakPlugin(),
       markdownShortcutPlugin(),
       codeBlockPlugin(),
+      codeMirrorPlugin({ codeBlockLanguages }),
       tablePlugin(),
       linkPlugin(),
       linkDialogPlugin(),
