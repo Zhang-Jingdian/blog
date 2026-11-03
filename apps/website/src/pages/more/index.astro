@@ -3,170 +3,495 @@ import MainLayout from '../../layouts/MainLayout.astro'
 
 const username = 'Zhang-Jingdian'
 const profileUrl = `https://github.com/${username}`
-const avatarUrl = `https://github.com/${username}.png`
+const avatarUrl = `https://github.com/${username}.png?size=240`
 ---
 
 <MainLayout title={`GitHub · ${username}`} description={`GitHub profile of ${username}`}>
-  <section class="grid min-h-[60vh] place-items-center py-10">
-    <div>
-      <div class="scene">
+  <section
+    class="relative mx-auto flex min-h-[80vh] max-w-5xl flex-col items-center justify-center gap-8 py-12"
+  >
+    <div
+      class="stage"
+      data-card-stage
+      data-api={`https://api.github.com/users/${username}`}
+    >
+      <div class="card" data-card>
+        <!-- Front face -->
         <a
-          id="gh-card"
-          class="card"
+          class="face face-front"
           href={profileUrl}
           target="_blank"
           rel="noopener noreferrer"
-          data-api={`https://api.github.com/users/${username}`}
           aria-label={`GitHub profile of ${username}`}
+          draggable="false"
         >
-          <img
-            id="gh-avatar"
-            class="avatar"
-            src={avatarUrl}
-            alt=""
-            width="96"
-            height="96"
-            loading="lazy"
-          />
-          <div class="body">
-            <h2 class="login">@{username}</h2>
-            <div class="stats">
-              <div class="stat">
-                <strong id="gh-repos">—</strong>
-                <span>Repos</span>
-              </div>
-              <div class="stat">
-                <strong id="gh-followers">—</strong>
-                <span>Followers</span>
-              </div>
-              <div class="stat">
-                <strong id="gh-following">—</strong>
-                <span>Following</span>
-              </div>
+          <header class="brand">
+            <img
+              class="avatar"
+              src={avatarUrl}
+              alt=""
+              width="64"
+              height="64"
+              loading="eager"
+              draggable="false"
+            />
+            <div class="id">
+              <p class="eyebrow">GitHub</p>
+              <h2 class="login">@{username}</h2>
             </div>
-            <span class="cta">View profile <span aria-hidden="true">→</span></span>
-          </div>
+            <svg class="mark" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                fill="currentColor"
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+              ></path>
+            </svg>
+          </header>
+
+          <dl class="stats">
+            <div class="stat">
+              <dd data-count="public_repos">—</dd>
+              <dt>Repos</dt>
+            </div>
+            <div class="stat">
+              <dd data-count="followers">—</dd>
+              <dt>Followers</dt>
+            </div>
+            <div class="stat">
+              <dd data-count="following">—</dd>
+              <dt>Following</dt>
+            </div>
+          </dl>
+
+          <footer class="foot">
+            <span class="url">github.com/{username}</span>
+          </footer>
         </a>
+
+        <!-- Back face -->
+        <div class="face face-back" aria-hidden="true">
+          <svg class="back-mark" viewBox="0 0 16 16">
+            <path
+              fill="currentColor"
+              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+            ></path>
+          </svg>
+          <div class="back-copy">
+            <p class="back-eyebrow">Always building</p>
+            <p class="back-name">@{username}</p>
+          </div>
+          <p class="back-url">github.com/{username}</p>
+        </div>
       </div>
     </div>
-  </section>
+   </section>
 </MainLayout>
 
 <style>
-  .scene {
-    perspective: 1200px;
+  .stage {
+    width: min(480px, 92vw);
+    aspect-ratio: 1.6 / 1;
+    perspective: 1600px;
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
   }
+  .stage:active {
+    cursor: grabbing;
+  }
+
   .card {
     position: relative;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    width: min(440px, 90vw);
-    padding: 2rem;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: linear-gradient(135deg, #0d1117, #161b22 60%, #1f2937);
-    color: #e6edf3;
-    text-decoration: none;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    width: 100%;
+    height: 100%;
     transform-style: preserve-3d;
-    transition:
-      transform 0.25s ease,
-      box-shadow 0.25s ease;
     will-change: transform;
   }
-  .card:hover {
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+
+  .face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.6rem;
+    border-radius: 20px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+  }
+
+  .face-front {
+    background: rgb(var(--black));
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 28px 70px rgba(var(--black), 0.32);
+    transition: box-shadow 0.3s ease;
+  }
+  .face-front:hover {
+    box-shadow: 0 32px 80px rgba(var(--black), 0.4);
+  }
+  .face-front:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .face-front img,
+  .face-front svg {
+    -webkit-user-drag: none;
+  }
+
+  .face-back {
+    transform: rotateY(180deg);
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 28px 70px rgba(var(--black), 0.32);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
   }
   .avatar {
-    flex-shrink: 0;
-    width: 96px;
-    height: 96px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    /* border: 2px solid rgba(255, 255, 255, 0.15); */
-    /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); */
-    transform: translateZ(40px);
+    object-fit: cover;
+    flex-shrink: 0;
   }
-  .body {
-    transform: translateZ(30px);
+  .id {
+    min-width: 0;
+  }
+  .eyebrow {
+    margin: 0 0 0.2rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgb(var(--gray));
   }
   .login {
-    margin: 0 0 1.25rem;
-    font-size: 1.5rem;
-    color: #fff;
+    margin: 0;
+    font-size: clamp(1.15rem, 4.2vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+  .mark {
+    width: 36px;
+    height: 36px;
+    margin-left: auto;
+    flex-shrink: 0;
+    opacity: 0.14;
+  }
+
   .stats {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
   }
   .stat {
     display: flex;
-    flex-direction: column;
-    line-height: 1.2;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+    min-width: 0;
   }
-  .stat strong {
-    font-size: 1.2rem;
-    color: #fff;
+  .stat dd {
+    margin: 0;
+    font-size: clamp(1.35rem, 5.5vw, 1.9rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
   }
-  .stat span {
-    font-size: 0.8rem;
+  .stat dt {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #8b949e;
+    color: rgb(var(--gray));
+    white-space: nowrap;
   }
-  .cta {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    background: var(--accent);
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #fff;
+
+  .foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.8rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+  .url {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.82);
+  }
+  .arrow {
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+  }
+  .face-front:hover .arrow {
+    transform: translateX(5px);
+  }
+
+  .back-mark {
+    width: 64px;
+    height: 64px;
+    opacity: 0.85;
+  }
+  .back-copy {
+    margin-top: auto;
+  }
+  .back-eyebrow {
+    margin: 0 0 0.35rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .back-name {
+    margin: 0;
+    font-size: clamp(1.3rem, 4.8vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .back-url {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.78rem;
+    opacity: 0.75;
+  }
+
+  .hint {
+    margin: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(var(--gray));
+    opacity: 0.7;
+    transition: opacity 0.4s ease;
+  }
+  .hint.is-hidden {
+    opacity: 0;
+  }
+
   @media (max-width: 480px) {
-    .card {
-      flex-direction: column;
-      text-align: center;
+    .face {
+      padding: 1.25rem;
+      gap: 0.75rem;
+    }
+    .avatar {
+      width: 52px;
+      height: 52px;
+    }
+    .mark {
+      width: 28px;
+      height: 28px;
     }
     .stats {
-      justify-content: center;
+      padding-top: 0.7rem;
+    }
+    .stat dt {
+      font-size: 0.56rem;
+    }
+    .foot {
+      font-size: 0.72rem;
+      padding: 0.5rem 0.75rem;
     }
   }
 </style>
 
-<script is:inline>
-  (() => {
-    const card = document.getElementById('gh-card');
-    const set = (id, text) => {
-      const el = document.getElementById(id);
-      if (el && text != null && text !== '') el.textContent = text;
-    };
+<script>
+  const stage = document.querySelector<HTMLElement>('[data-card-stage]')
+  const card = document.querySelector<HTMLElement>('[data-card]')
+  const hint = document.querySelector<HTMLElement>('[data-hint]')
 
-    // 3D tilt.
-    const MAX = 12; // degrees
-    card.addEventListener('mousemove', (e) => {
-      const r = card.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width;
-      const py = (e.clientY - r.top) / r.height;
-      card.style.transform =
-        `rotateX(${(0.5 - py) * MAX * 2}deg) rotateY(${(px - 0.5) * MAX * 2}deg)`;
-    });
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
-    });
+  if (stage && card) {
+    const clamp = (v: number, min: number, max: number) =>
+      Math.min(max, Math.max(min, v))
 
-    // Live public stats only (repos / followers / following). The card deliberately
-    // omits name, bio, and location to avoid exposing personal details.
-    fetch(card.dataset.api)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(r.status))))
-      .then((u) => {
-        set('gh-repos', u.public_repos);
-        set('gh-followers', u.followers);
-        set('gh-following', u.following);
-      })
-      .catch(() => {
-        // Keep the static placeholder dashes.
-      });
-  })();
+// ---------- Live public stats ----------
+// Only counts are shown; name, bio and location are intentionally omitted.
+type GithubStats = {
+  public_repos: number
+  followers: number
+  following: number
+}
+const STAT_KEYS = ['public_repos', 'followers', 'following'] as const
+
+const api = stage.dataset.api
+if (api) {
+  fetch(api)
+    .then((r) => {
+      if (!r.ok) throw new Error(String(r.status))
+      return r.json() as Promise<GithubStats>
+    })
+    .then((user) => {
+      for (const key of STAT_KEYS) {
+        const el = stage.querySelector<HTMLElement>(`[data-count="${key}"]`)
+        const value = user[key]
+        if (el && typeof value === 'number') el.textContent = value.toLocaleString()
+      }
+    })
+    .catch(() => {
+      // Keep the static placeholder dashes on failure.
+    })
+}
+
+    // ---------- 360° drag rotation ----------
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const REST_TILT = -8 // resting pitch (deg)
+    const DRAG_SPEED_X = 0.55 // deg per px, horizontal spin (unlimited)
+    const DRAG_SPEED_Y = 0.3 // deg per px, vertical pitch (clamped)
+    const MAX_TILT = 30
+    const SNAP_TO_FACE = true // settle on front/back after release
+
+    let rx = REST_TILT
+    let ry = 0
+    let vx = 0
+    let vy = 0
+
+    let dragging = false
+    let moved = false
+    let startX = 0
+    let startY = 0
+    let startRx = 0
+    let startRy = 0
+    let lastX = 0
+    let lastY = 0
+
+    let raf = 0
+    let lastT = 0
+
+    const nearestFace = () => Math.round(ry / 180) * 180
+
+    const apply = () => {
+      card.style.transform = `rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`
+    }
+
+    const tick = (now: number) => {
+      // Frame-rate independent step (k = 1 at 60fps)
+      const dt = Math.min((now - lastT) / 1000, 1 / 20)
+      lastT = now
+      const k = dt * 60
+
+      if (!dragging) {
+        // Inertia decay
+        ry += vy * k
+        rx += vx * k
+        vy *= Math.pow(0.94, k)
+        vx *= Math.pow(0.9, k)
+        if (Math.abs(vy) < 0.01) vy = 0
+        if (Math.abs(vx) < 0.01) vx = 0
+
+        // Ease pitch back to the resting tilt
+        rx += (REST_TILT - rx) * (1 - Math.pow(1 - 0.035, k))
+        rx = clamp(rx, -MAX_TILT, MAX_TILT)
+
+        // Once the spin is slow, ease toward the nearest face (multiple of 180°)
+        if (SNAP_TO_FACE && Math.abs(vy) < 0.3) {
+          ry += (nearestFace() - ry) * (1 - Math.pow(1 - 0.08, k))
+        }
+
+        apply()
+
+        // Stop the loop once everything has settled
+        const settled =
+          vx === 0 &&
+          vy === 0 &&
+          Math.abs(REST_TILT - rx) < 0.05 &&
+          (!SNAP_TO_FACE || Math.abs(nearestFace() - ry) < 0.05)
+        if (settled) {
+          raf = 0
+          return
+        }
+      }
+      raf = requestAnimationFrame(tick)
+    }
+
+    // Start the loop on demand (it stops itself when idle)
+    const kick = () => {
+      if (reduceMotion || raf) return
+      lastT = performance.now()
+      raf = requestAnimationFrame(tick)
+    }
+
+    const onPointerDown = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return
+      dragging = true
+      moved = false
+      vx = vy = 0
+      startX = lastX = e.clientX
+      startY = lastY = e.clientY
+      startRx = rx
+      startRy = ry
+    }
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!dragging) return
+
+      const totalDx = e.clientX - startX
+      const totalDy = e.clientY - startY
+      if (Math.abs(totalDx) + Math.abs(totalDy) > 6) {
+        if (!moved) hint?.classList.add('is-hidden') // fade the hint on first real drag
+        moved = true
+      }
+
+      ry = startRy + totalDx * DRAG_SPEED_X
+      rx = clamp(startRx - totalDy * DRAG_SPEED_Y, -MAX_TILT, MAX_TILT)
+
+      // Track velocity for the release inertia
+      vy = (e.clientX - lastX) * DRAG_SPEED_X
+      vx = -(e.clientY - lastY) * DRAG_SPEED_Y
+      lastX = e.clientX
+      lastY = e.clientY
+
+      apply()
+    }
+
+    const onPointerUp = () => {
+      if (!dragging) return
+      dragging = false
+      kick()
+    }
+
+    // Swallow the click after a real drag, so the link only opens on a plain tap
+    stage.addEventListener(
+      'click',
+      (e) => {
+        if (moved) {
+          e.preventDefault()
+          e.stopPropagation()
+          moved = false
+        }
+      },
+      true
+    )
+
+    // Block the native link/image drag ghost
+    stage.addEventListener('dragstart', (e) => e.preventDefault())
+
+    // Listen on window so dragging keeps working outside the stage.
+    // (No setPointerCapture: it would retarget the click and break the link.)
+    stage.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
+
+    apply()
+  }
 </script>

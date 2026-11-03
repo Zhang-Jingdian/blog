@@ -3,17 +3,61 @@ import MainLayout from '../layouts/MainLayout.astro'
 ---
 
 <MainLayout
-  title="About"
+  title="home"
   description="A personal blog about building for the web."
 >
-  <section class="mx-auto max-w-3xl">
-    <h1 class="mb-1">Hi 👋</h1>
-    <p class="m-0 text-lg text-muted">Full-stack developer · building for the modern web</p>
+  <section class="relative mx-auto max-w-5xl py-12 md:py-24">
+    <!-- Full-bleed canvas layer: no box, so nothing gets clipped -->
+    <div
+      data-scene
+      aria-hidden="true"
+      class="pointer-events-none absolute -inset-y-16 left-1/2 w-screen -translate-x-1/2"
+    >
+    </div>
 
-    <p class="mt-10 text-lg leading-relaxed">
-      I'm a developer who cares about the details — fast sites, clean APIs, and tooling
-      that gets out of the way. This is my corner of the internet, where I write about
-      what I'm building, breaking, and learning.
-    </p>
+    <div class="relative z-10 grid items-center gap-6 md:grid-cols-2 md:gap-10">
+      <!-- 3D anchor: on top for mobile, on the right for desktop.
+           touch-pan-y keeps vertical scrolling working while horizontal drags rotate the object -->
+      <div
+        data-scene-anchor
+        aria-hidden="true"
+        class="order-first mx-auto aspect-square w-3/4 max-w-xs touch-pan-y md:order-last md:w-full md:max-w-none"
+      >
+      </div>
+
+      <!-- Copy -->
+      <div>
+        <p class="font-mono text-sm uppercase tracking-widest text-muted">
+          Full-stack developer
+        </p>
+
+        <h1 class="mt-4 text-5xl font-bold leading-[1.05] tracking-tight sm:text-7xl">
+          Hi 👋<br />
+          I build for<br />
+          the web.
+        </h1>
+
+        <p class="mt-8 max-w-md text-lg leading-relaxed text-muted">
+          I care about the details: fast sites, clean APIs, and tooling that gets
+          out of the way. This is where I write about what I'm building, breaking,
+          and learning.
+        </p>
+
+        <div class="mt-10">
+          <a
+            href="/blog"
+            class="inline-block rounded-md bg-(--accent) px-5 py-2.5 font-medium text-white transition"
+          >
+            Read the blog
+          </a>
+        </div>
+      </div>
+    </div>
   </section>
 </MainLayout>
+
+<script>
+  import { initHeroScene } from '../scripts/hero-scene'
+
+  initHeroScene()
+</script>
