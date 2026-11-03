@@ -27,6 +27,7 @@ dist
 .void
 .wrangler
 .void-wrangler.jsonc
+.cloudflare
 .env.*
 !.env.example
 *.tsbuildinfo

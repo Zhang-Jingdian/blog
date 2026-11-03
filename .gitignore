@@ -31,6 +31,9 @@ dist-ssr
 
 # AI agent worktrees
 .claude/worktrees/
+
+# Void / Cloudflare build output
+.cloudflare
 !.vscode/
 !.vscode/settings.json
 !.vscode/extensions.json

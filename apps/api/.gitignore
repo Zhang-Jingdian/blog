@@ -25,6 +25,7 @@ dist-ssr
 .void
 .wrangler
 .void-wrangler.jsonc
+.cloudflare
 .env
 .env.*
 !.env.example

@@ -40,6 +40,7 @@ __screenshots__/
 .void
 .wrangler
 .void-wrangler.jsonc
+.cloudflare
 .env
 .env.*
 !.env.example
