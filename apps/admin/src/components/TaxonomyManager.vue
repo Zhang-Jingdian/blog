@@ -114,17 +114,15 @@ onMounted(load);
         </form>
         <div
           v-else
-          class="grid grid-cols-1 gap-4 border-b border-soft py-4 xs:grid-cols-[minmax(0,1fr)_auto] xs:items-center"
+          class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-soft py-4"
         >
-          <div
-            class="grid min-w-0 grid-cols-1 gap-1 xs:grid-cols-[auto_auto_auto_auto] xs:items-baseline xs:gap-x-3 xs:gap-y-1"
-          >
+          <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
             <span class="text-ink">{{ item.name }}</span>
             <span class="text-muted">/{{ item.slug }}</span>
             <span v-if="item.description" class="text-muted">{{ item.description }}</span>
             <span class="text-muted">{{ item.postCount ?? 0 }} posts</span>
           </div>
-          <div class="grid grid-flow-col items-center justify-start gap-3 xs:justify-end">
+          <div class="grid grid-flow-col items-center justify-end gap-3">
             <button class="link" @click="startEdit(item)">Edit</button>
             <button class="link text-danger hover:text-danger" @click="remove(item)">Delete</button>
           </div>

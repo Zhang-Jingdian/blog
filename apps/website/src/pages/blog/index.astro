@@ -97,6 +97,9 @@ const posts = (await listFullPosts()).map((post) => ({
     const totalPages = Math.max(1, Math.ceil(matches.length / pageSize));
     const page = Math.min(Math.max(1, Number(params.get('page')) || 1), totalPages);
     const start = (page - 1) * pageSize;
+    items.forEach((li) => {
+      li.hidden = true;
+    });
     matches.forEach((li, i) => {
       li.hidden = i < start || i >= start + pageSize;
     });

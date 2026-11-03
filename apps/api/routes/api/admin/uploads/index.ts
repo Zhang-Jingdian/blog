@@ -45,7 +45,7 @@ export const POST = defineHandler(async (c) => {
   const bytes = await c.req.arrayBuffer();
   const { contentType, ext } = parseUploadedImage(c.req.header("content-type") ?? "", bytes);
 
-  const key = `cover-${crypto.randomUUID()}.${ext}`;
+  const key = `file-${crypto.randomUUID()}.${ext}`;
   await storage.put(key, bytes, { httpMetadata: { contentType } });
 
   return { url: new URL(`/api/files/${key}`, c.req.url).toString() };

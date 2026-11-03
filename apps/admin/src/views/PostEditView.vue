@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref } from "vue";
+import { nextTick, onMounted, onUnmounted, reactive, ref } from "vue";
+import { createElement } from "react";
+import { createRoot, type Root } from "react-dom/client";
 import { RouterLink, useRoute, useRouter } from "vue-router";
 import {
   createPost,
@@ -9,6 +11,7 @@ import {
   updatePost,
   uploadImage,
 } from "@/api/client";
+import { MarkdownEditor } from "@/components/MarkdownEditor";
 import type { PostInput, PostStatus, Taxonomy } from "@/api/types";
 
 interface PostForm {
@@ -36,8 +39,8 @@ const uploading = ref(false);
 const insertingImage = ref(false);
 const error = ref("");
 const fileInput = ref<HTMLInputElement | null>(null);
-const contentInput = ref<HTMLTextAreaElement | null>(null);
-const contentFileInput = ref<HTMLInputElement | null>(null);
+const editorHost = ref<HTMLDivElement | null>(null);
+let reactRoot: Root | null = null;
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -131,44 +134,26 @@ function onPaste(event: ClipboardEvent) {
   handleFile(event.clipboardData?.files?.[0]);
 }
 
-// Insert a Markdown snippet at the cursor in the content textarea.
-function insertMarkdown(text: string) {
-  const el = contentInput.value;
-  if (!el) {
-    form.content += text;
-    return;
-  }
-  const start = el.selectionStart ?? form.content.length;
-  const end = el.selectionEnd ?? form.content.length;
-  form.content = form.content.slice(0, start) + text + form.content.slice(end);
-  nextTick(() => {
-    el.focus();
-    const pos = start + text.length;
-    el.setSelectionRange(pos, pos);
-  });
-}
-
-async function insertImage(file: File | null | undefined) {
-  insertingImage.value = true;
+// Upload an image from the MDX editor and return its served URL (throws on failure).
+async function handleEditorImageUpload(file: File): Promise<string> {
   const url = await uploadFile(file);
-  insertingImage.value = false;
-  if (!url) return;
-  const alt = file?.name.replace(/\.[^.]+$/, "") || "image";
-  insertMarkdown(`![${alt}](${url})`);
+  if (!url) throw new Error("Image upload failed");
+  return url;
 }
 
-function onContentFileInput(event: Event) {
-  const input = event.target as HTMLInputElement;
-  insertImage(input.files?.[0]);
-  input.value = "";
-}
-
-function onContentPaste(event: ClipboardEvent) {
-  const file = event.clipboardData?.files?.[0];
-  if (file) {
-    event.preventDefault();
-    insertImage(file);
-  }
+// Mount the React-based MDX editor into the content host element.
+function mountEditor() {
+  if (!editorHost.value || reactRoot) return;
+  reactRoot = createRoot(editorHost.value);
+  reactRoot.render(
+    createElement(MarkdownEditor, {
+      initialMarkdown: form.content,
+      onChange: (markdown: string) => {
+        form.content = markdown;
+      },
+      imageUploadHandler: handleEditorImageUpload,
+    }),
+  );
 }
 
 async function submit() {
@@ -198,6 +183,13 @@ onMounted(async () => {
   loading.value = true;
   await Promise.all([loadRefs(), loadPost()]);
   loading.value = false;
+  await nextTick();
+  mountEditor();
+});
+
+onUnmounted(() => {
+  reactRoot?.unmount();
+  reactRoot = null;
 });
 </script>
 
@@ -291,33 +283,8 @@ onMounted(async () => {
       </fieldset>
 
       <div class="grid gap-1">
-        <div class="flex items-center justify-between">
-          <span class="text-body">Content</span>
-          <button
-            type="button"
-            class="btn"
-            :disabled="insertingImage"
-            @click="contentFileInput?.click()"
-          >
-            {{ insertingImage ? "Inserting…" : "Add image" }}
-          </button>
-        </div>
-        <textarea
-          ref="contentInput"
-          v-model="form.content"
-          rows="12"
-          required
-          class="field resize-y"
-          @paste.stop="onContentPaste"
-        ></textarea>
-        <input
-          ref="contentFileInput"
-          type="file"
-          accept="image/*"
-          class="hidden"
-          @change="onContentFileInput"
-        />
-        <p class="m-0 text-muted">Tip: paste an image here to insert it into the content.</p>
+        <span class="text-body">Content</span>
+        <div ref="editorHost" class="rounded-md border border-soft"></div>
       </div>
 
       <div class="grid grid-flow-col items-center justify-start gap-4">
