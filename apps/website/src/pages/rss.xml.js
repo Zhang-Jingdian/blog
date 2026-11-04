@@ -4,16 +4,19 @@ import { listFullPosts, renderMarkdown } from "../lib/api";
 
 export async function GET(context) {
   const posts = await listFullPosts();
-  return rss({
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    site: context.site,
-    items: posts.map((post) => ({
+  const items = await Promise.all(
+    posts.map(async (post) => ({
       title: post.title,
       description: post.description ?? "",
       pubDate: new Date(post.publishedAt),
       link: `/blog/${post.slug}/`,
-      content: renderMarkdown(post.content),
+      content: await renderMarkdown(post.content),
     })),
+  );
+  return rss({
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    site: context.site,
+    items,
   });
 }

@@ -84,7 +84,7 @@ onMounted(load);
 <template>
   <section>
     <form
-      class="my-4 grid grid-cols-1 gap-2 xs:mb-6 xs:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+      class="my-4 grid grid-cols-[minmax(0,1fr)_auto_auto] gap-2 xs:mb-6"
       @submit.prevent="create"
     >
       <input v-model="createForm.name" placeholder="Name" required class="field" />

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import {
   ApiError,
+  assignUploads,
   deleteUpload,
   fileUrl,
   getPost,
@@ -86,14 +87,18 @@ describe("admin uploadImage", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("POSTs the file body with its content type", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(jsonEnvelope(200, { url: "http://localhost:5173/api/files/cover-1.png" }));
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonEnvelope(200, {
+        url: "http://localhost:5173/api/files/cover-1.png",
+        key: "cover-1.png",
+      }),
+    );
     vi.stubGlobal("fetch", fetchMock);
 
     const file = new Blob(["img"], { type: "image/png" });
     await expect(uploadImage(file)).resolves.toEqual({
       url: "http://localhost:5173/api/files/cover-1.png",
+      key: "cover-1.png",
     });
 
     const [path, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -101,6 +106,21 @@ describe("admin uploadImage", () => {
     expect(init.method).toBe("POST");
     expect((init.headers as Record<string, string>)["content-type"]).toBe("image/png");
     expect(init.body).toBe(file);
+  });
+
+  it("appends postId when scoping the upload to a post", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonEnvelope(200, { url: "/api/files/c.png", key: "c.png" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const file = new Blob(["img"], { type: "image/png" });
+    await uploadImage(file, 7);
+
+    const [path] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const parsed = new URL(path, "http://x");
+    expect(parsed.pathname).toBe("/api/admin/uploads");
+    expect(parsed.searchParams.get("postId")).toBe("7");
   });
 });
 
@@ -123,6 +143,34 @@ describe("admin uploads library", () => {
     expect(parsed.searchParams.get("q")).toBe("cover");
     expect(parsed.searchParams.get("page")).toBe("2");
     expect(parsed.searchParams.get("pageSize")).toBe("24");
+  });
+
+  it("listUploads scopes by postId when provided", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        jsonEnvelope(200, { items: [], page: 1, pageSize: 24, total: 0, totalPages: 0 }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await listUploads({ postId: 7 });
+
+    const url = fetchMock.mock.calls[0][0] as string;
+    const parsed = new URL(url, "http://x");
+    expect(parsed.searchParams.get("postId")).toBe("7");
+  });
+
+  it("assignUploads POSTs the postId and keys", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonEnvelope(200, { assigned: 2 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(assignUploads(7, ["a.png", "b.png"])).resolves.toEqual({ assigned: 2 });
+
+    const [path, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(path).toBe("/api/admin/uploads/assign");
+    expect(init.method).toBe("POST");
+    expect((init.headers as Record<string, string>)["content-type"]).toBe("application/json");
+    expect(JSON.parse(init.body as string)).toEqual({ postId: 7, keys: ["a.png", "b.png"] });
   });
 
   it("deleteUpload sends DELETE to the keyed path", async () => {

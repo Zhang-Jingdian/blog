@@ -37,4 +37,14 @@
   .field {
     @apply min-w-0 w-full rounded-md border border-soft bg-white px-2.5 py-1.5 text-base text-body;
   }
+
+  .toolbar-btn {
+    @apply inline-grid cursor-pointer place-items-center rounded px-2 py-1 text-sm text-body no-underline;
+  }
+  .toolbar-btn:hover {
+    @apply bg-soft;
+  }
+  .toolbar-btn.is-active {
+    @apply bg-soft text-accent;
+  }
 }

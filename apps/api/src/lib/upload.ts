@@ -59,34 +59,27 @@ export function parseUploadedImage(
   return { contentType, ext };
 }
 
-export interface UploadObject {
-  key: string;
-  size: number;
-  uploaded: Date;
-  contentType?: string | null;
-}
-
 export interface UploadItem {
   key: string;
   size: number;
   uploaded: string;
   contentType: string | null;
+  postId: number | null;
 }
 
-// Sort newest-first and paginate (R2 lists keys lexicographically, not by upload order).
-export function paginateUploads(
-  objects: UploadObject[],
-  page: number,
-  pageSize: number,
-): { items: UploadItem[]; page: number; pageSize: number; total: number; totalPages: number } {
-  const sorted = [...objects].sort((a, b) => b.uploaded.getTime() - a.uploaded.getTime());
-  const total = sorted.length;
-  const start = (page - 1) * pageSize;
-  const items = sorted.slice(start, start + pageSize).map((o) => ({
-    key: o.key,
-    size: o.size,
-    uploaded: o.uploaded.toISOString(),
-    contentType: o.contentType ?? null,
-  }));
-  return { items, page, pageSize, total, totalPages: Math.ceil(total / pageSize) };
+// Map a DB row (from the `upload` table) to the shape returned by the API.
+export function toUploadItem(row: {
+  key: string;
+  size: number;
+  contentType: string;
+  postId: number | null;
+  createdAt: Date;
+}): UploadItem {
+  return {
+    key: row.key,
+    size: row.size,
+    uploaded: row.createdAt.toISOString(),
+    contentType: row.contentType,
+    postId: row.postId,
+  };
 }

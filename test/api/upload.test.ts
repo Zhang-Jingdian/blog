@@ -2,9 +2,8 @@ import { describe, expect, it } from "vite-plus/test";
 import { AppError } from "../../apps/api/src/lib/error.ts";
 import {
   matchesImageMagic,
-  paginateUploads,
   parseUploadedImage,
-  type UploadObject,
+  toUploadItem,
 } from "../../apps/api/src/lib/upload.ts";
 
 function bytes(...nums: number[]): Uint8Array {
@@ -56,44 +55,33 @@ describe("matchesImageMagic", () => {
   });
 });
 
-describe("paginateUploads", () => {
-  function obj(
-    key: string,
-    uploaded: string,
-    contentType: string | null = "image/png",
-  ): UploadObject {
-    return { key, size: key.length, uploaded: new Date(uploaded), contentType };
-  }
-
-  it("sorts newest-first and paginates", () => {
-    const objects = [
-      obj("a.png", "2026-01-01T00:00:00Z"),
-      obj("c.png", "2026-03-01T00:00:00Z"),
-      obj("b.png", "2026-02-01T00:00:00Z"),
-    ];
-    const result = paginateUploads(objects, 1, 2);
-    expect(result.items.map((i) => i.key)).toEqual(["c.png", "b.png"]);
-    expect(result.total).toBe(3);
-    expect(result.totalPages).toBe(2);
+describe("toUploadItem", () => {
+  it("maps a DB row to the API shape", () => {
+    const row = {
+      key: "file-abc.png",
+      size: 42,
+      contentType: "image/png",
+      postId: 7,
+      createdAt: new Date("2026-01-01T00:00:00Z"),
+    };
+    expect(toUploadItem(row)).toEqual({
+      key: "file-abc.png",
+      size: 42,
+      uploaded: "2026-01-01T00:00:00.000Z",
+      contentType: "image/png",
+      postId: 7,
+    });
   });
 
-  it("returns an empty page past the end", () => {
-    const result = paginateUploads([obj("a.png", "2026-01-01T00:00:00Z")], 3, 10);
-    expect(result.items).toEqual([]);
-    expect(result.total).toBe(1);
-    expect(result.totalPages).toBe(1);
-  });
-
-  it("serializes uploaded as ISO and defaults missing content type to null", () => {
-    const result = paginateUploads([obj("a.png", "2026-01-01T00:00:00Z", null)], 1, 10);
-    expect(result.items[0].uploaded).toBe("2026-01-01T00:00:00.000Z");
-    expect(result.items[0].contentType).toBe(null);
-  });
-
-  it("does not mutate the input array", () => {
-    const objects = [obj("a.png", "2026-02-01T00:00:00Z"), obj("b.png", "2026-01-01T00:00:00Z")];
-    paginateUploads(objects, 1, 10);
-    expect(objects.map((o) => o.key)).toEqual(["a.png", "b.png"]);
+  it("keeps null postId for unassigned files", () => {
+    const row = {
+      key: "file-abc.png",
+      size: 42,
+      contentType: "image/png",
+      postId: null,
+      createdAt: new Date("2026-01-01T00:00:00Z"),
+    };
+    expect(toUploadItem(row).postId).toBe(null);
   });
 });
 

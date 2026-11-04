@@ -124,8 +124,8 @@ describe("website listAllPosts", () => {
 });
 
 describe("website renderMarkdown", () => {
-  it("converts markdown to HTML", () => {
-    expect(renderMarkdown("# Hello")).toContain("<h1");
-    expect(renderMarkdown("**bold**")).toContain("<strong>bold</strong>");
+  it("converts markdown to HTML", async () => {
+    expect(await renderMarkdown("# Hello")).toContain("<h1");
+    expect(await renderMarkdown("**bold**")).toContain("<strong>bold</strong>");
   });
 });

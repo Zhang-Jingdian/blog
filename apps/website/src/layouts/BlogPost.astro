@@ -25,7 +25,7 @@ const hasUpdate = updatedAt && publishedAt && updatedAt.getTime() > publishedAt.
         <img src={coverUrl} alt="" class="w-full rounded-xl shadow-(--box-shadow)" />
       </div>
     )}
-    <div class="text-body">
+    <div class="text-body mx-auto max-w-[720px]">
       <div class="py-4 text-center font-bold leading-none">
         <h1 class="mb-1">{title}</h1>
       </div>
@@ -52,7 +52,7 @@ const hasUpdate = updatedAt && publishedAt && updatedAt.getTime() > publishedAt.
       </div>
       {description && <p class="mb-4 mt-0 text-[1.1em] leading-normal text-muted">{description}</p>}
       <hr />
-      <div class="content" set:html={contentHtml} />
+      <div class="prose" set:html={contentHtml} />
     </div>
   </article>
 </MainLayout>

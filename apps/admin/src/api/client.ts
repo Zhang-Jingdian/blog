@@ -85,8 +85,9 @@ export function deletePost(id: number): Promise<{ deleted: boolean }> {
   return request<{ deleted: boolean }>(`/api/admin/posts/${id}`, { method: "DELETE" });
 }
 
-export function uploadImage(file: Blob): Promise<{ url: string }> {
-  return request<{ url: string }>("/api/admin/uploads", {
+export function uploadImage(file: Blob, postId?: number): Promise<{ url: string; key: string }> {
+  const qs = postId ? `?postId=${postId}` : "";
+  return request<{ url: string; key: string }>(`/api/admin/uploads${qs}`, {
     method: "POST",
     headers: { "content-type": file.type },
     body: file,
@@ -95,15 +96,25 @@ export function uploadImage(file: Blob): Promise<{ url: string }> {
 
 export function listUploads(query?: {
   q?: string;
+  postId?: number;
   page?: number;
   pageSize?: number;
 }): Promise<UploadListResult> {
   const params = new URLSearchParams();
   if (query?.q) params.set("q", query.q);
+  if (query?.postId) params.set("postId", String(query.postId));
   if (query?.page && query.page > 1) params.set("page", String(query.page));
   if (query?.pageSize) params.set("pageSize", String(query.pageSize));
   const qs = params.toString();
   return request<UploadListResult>(`/api/admin/uploads${qs ? `?${qs}` : ""}`);
+}
+
+// Attach a batch of unassigned uploads to a post (after the post is created).
+export function assignUploads(postId: number, keys: string[]): Promise<{ assigned: number }> {
+  return request<{ assigned: number }>(
+    "/api/admin/uploads/assign",
+    jsonInit("POST", { postId, keys }),
+  );
 }
 
 export function deleteUpload(key: string): Promise<{ deleted: boolean }> {

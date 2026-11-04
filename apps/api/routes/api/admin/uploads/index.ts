@@ -1,18 +1,14 @@
 import { defineHandler } from "void";
+import { and, count, desc, eq, sql, db } from "void/db";
 import { storage } from "void/storage";
-import { uploadListQuery } from "../../../../src/lib/schemas.ts";
-import {
-  paginateUploads,
-  parseUploadedImage,
-  type UploadObject,
-} from "../../../../src/lib/upload.ts";
+import { upload } from "@schema";
+import { uploadListQuery, uploadPostQuery } from "../../../../src/lib/schemas.ts";
+import { parseUploadedImage, toUploadItem } from "../../../../src/lib/upload.ts";
 
-// Upper bound on objects fetched for one list request (R2 caps a single call at
-// 1000 and returns a cursor for the rest).
-const MAX_LIST_OBJECTS = 5000;
+type Condition = ReturnType<typeof eq>;
 
-// GET /api/admin/uploads — list uploaded objects, newest first, optionally
-// filtered by a case-insensitive substring of the key.
+// GET /api/admin/uploads — list uploads newest-first. `postId` scopes to a single
+// post (the embedded editor library); without it the global library lists all.
 export const GET = defineHandler.withValidator({ query: uploadListQuery })(async (
   _c,
   { query },
@@ -21,32 +17,48 @@ export const GET = defineHandler.withValidator({ query: uploadListQuery })(async
   const pageSize = query.pageSize ?? 20;
   const q = query.q?.trim().toLowerCase();
 
-  const objects: UploadObject[] = [];
-  let cursor: string | undefined;
-  do {
-    const res = await storage.list({ limit: 1000, cursor });
-    for (const o of res.objects) {
-      objects.push({
-        key: o.key,
-        size: o.size,
-        uploaded: o.uploaded,
-        contentType: o.httpMetadata?.contentType ?? null,
-      });
-    }
-    cursor = res.truncated ? res.cursor : undefined;
-  } while (cursor && objects.length < MAX_LIST_OBJECTS);
+  const conds: Condition[] = [];
+  if (query.postId !== undefined) conds.push(eq(upload.postId, query.postId));
+  if (q) conds.push(sql`(instr(lower(${upload.key}), lower(${q})) > 0)`);
+  const where = conds.length > 0 ? and(...conds) : undefined;
 
-  const filtered = q ? objects.filter((o) => o.key.toLowerCase().includes(q)) : objects;
-  return paginateUploads(filtered, page, pageSize);
+  const countBase = db.select({ c: count() }).from(upload);
+  const total = (await (where ? countBase.where(where) : countBase).get())?.c ?? 0;
+
+  const select = db.select().from(upload);
+  const rows = await (where ? select.where(where) : select)
+    .orderBy(desc(upload.createdAt), desc(upload.id))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize)
+    .all();
+
+  return {
+    items: rows.map(toUploadItem),
+    page,
+    pageSize,
+    total,
+    totalPages: Math.ceil(total / pageSize),
+  };
 });
 
-// POST /api/admin/uploads — store an image (cover or inline) in R2 and return its URL.
-export const POST = defineHandler(async (c) => {
+// POST /api/admin/uploads?postId=<id> — store an image in R2 and record its
+// metadata (and optional post association) in D1. Returns the key so the client
+// can bulk-assign unassigned files to a post after it is created.
+export const POST = defineHandler.withValidator({ query: uploadPostQuery })(async (
+  c,
+  { query },
+) => {
   const bytes = await c.req.arrayBuffer();
   const { contentType, ext } = parseUploadedImage(c.req.header("content-type") ?? "", bytes);
 
   const key = `file-${crypto.randomUUID()}.${ext}`;
   await storage.put(key, bytes, { httpMetadata: { contentType } });
+  await db.insert(upload).values({
+    key,
+    contentType,
+    size: bytes.byteLength,
+    postId: query.postId ?? null,
+  });
 
-  return { url: new URL(`/api/files/${key}`, c.req.url).toString() };
+  return { url: new URL(`/api/files/${key}`, c.req.url).toString(), key };
 });

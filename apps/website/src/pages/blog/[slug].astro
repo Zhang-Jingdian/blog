@@ -16,6 +16,7 @@ interface Props {
 }
 
 const { post } = Astro.props
+const contentHtml = await renderMarkdown(post.content)
 ---
 
 <BlogPostLayout
@@ -26,5 +27,5 @@ const { post } = Astro.props
   updatedAt={new Date(post.updatedAt)}
   category={post.category}
   tags={post.tags}
-  contentHtml={renderMarkdown(post.content)}
+  contentHtml={contentHtml}
 />

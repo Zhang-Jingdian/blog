@@ -79,10 +79,23 @@ export type PaginationQuery = v.InferOutput<typeof paginationQuery>;
 
 export const uploadListQuery = v.object({
   q: v.optional(v.pipe(v.string(), v.maxLength(100))),
+  postId: v.optional(intParam),
   page: v.optional(intParam),
   pageSize: v.optional(pageSizeParam),
 });
 export type UploadListQuery = v.InferOutput<typeof uploadListQuery>;
+
+// Optional postId for an upload (query param — the body is the raw file bytes).
+export const uploadPostQuery = v.object({ postId: v.optional(intParam) });
+export type UploadPostQuery = v.InferOutput<typeof uploadPostQuery>;
+
+// Bulk-assign previously unassigned uploads to a post (used after creating a
+// post whose cover/inline images were uploaded before the post had an id).
+export const uploadAssignBody = v.object({
+  postId: positiveInt,
+  keys: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1), v.maxLength(200)),
+});
+export type UploadAssignBody = v.InferOutput<typeof uploadAssignBody>;
 
 export const idParams = v.object({ id: intParam });
 export type IdParams = v.InferOutput<typeof idParams>;

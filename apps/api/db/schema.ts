@@ -69,3 +69,19 @@ export const postTag = sqliteTable(
   },
   (t) => [primaryKey({ columns: [t.postId, t.tagId] }), index("postTag_tagId_idx").on(t.tagId)],
 );
+
+// Uploaded media files. `key` is the flat R2 object key; `postId` scopes a file
+// to the post it was uploaded from (null = unassigned / global). R2 stays the
+// byte store, this table is the metadata + per-post association.
+export const upload = sqliteTable(
+  "upload",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    key: text("key").notNull().unique(),
+    contentType: text("contentType").notNull(),
+    size: integer("size").notNull(),
+    postId: integer("postId").references(() => post.id, { onDelete: "set null" }),
+    ...timestamps,
+  },
+  (t) => [index("upload_postId_idx").on(t.postId)],
+);

@@ -108,6 +108,87 @@
     color: var(--accent);
   }
 
+  /* Markdown typography shared by the editor content and the preview pane,
+     mirroring the published site (see apps/website/src/styles/global.css). */
+  .prose p,
+  .editor-content p {
+    margin: 0 0 1.5em;
+  }
+  .prose p {
+    margin-bottom: 2em;
+  }
+  .prose ul,
+  .prose ol,
+  .editor-content ul,
+  .editor-content ol {
+    margin: 0 0 1.5em;
+    padding-left: 1.5em;
+  }
+  .prose ul,
+  .editor-content ul {
+    list-style: disc;
+  }
+  .prose ol,
+  .editor-content ol {
+    list-style: decimal;
+  }
+  .prose li,
+  .editor-content li {
+    margin-bottom: 0.25em;
+  }
+  .prose img,
+  .editor-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .prose code,
+  .editor-content code {
+    padding: 2px 5px;
+    background-color: rgb(var(--gray-light));
+    border-radius: 2px;
+  }
+  .prose pre,
+  .editor-content pre {
+    padding: 1.5em;
+    border-radius: 8px;
+    /* Match the github-dark code blocks the preview and website use. */
+    background-color: #24292e;
+    color: #e1e4e8;
+    overflow-x: auto;
+  }
+  .prose pre > code,
+  .editor-content pre > code {
+    all: unset;
+  }
+  .prose blockquote,
+  .editor-content blockquote {
+    border-left: 4px solid var(--accent);
+    padding: 0 0 0 20px;
+    margin: 0 0 1.5em;
+    font-size: 1.333em;
+  }
+  .prose hr,
+  .editor-content hr {
+    border: none;
+    border-top: 1px solid rgb(var(--gray-light));
+    margin: 2em 0;
+  }
+  .prose table,
+  .editor-content table {
+    width: 100%;
+  }
+  /* The published site keeps tables borderless; the editor needs visible
+     borders so cells are legible while editing. */
+  .editor-content table {
+    border-collapse: collapse;
+  }
+  .editor-content th,
+  .editor-content td {
+    border: 1px solid rgb(var(--gray-light));
+    padding: 6px 10px;
+  }
+
   /* Hide scrollbars while preserving scrolling */
   * {
     scrollbar-width: none; /* Firefox */

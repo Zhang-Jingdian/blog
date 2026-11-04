@@ -59,6 +59,9 @@
   h6 {
     margin: 0 0 0.5rem 0;
     color: rgb(var(--black));
+    /* Tailwind's preflight resets heading weight; restore the bold the preview
+       (and apps/test) headings have. */
+    font-weight: 700;
     line-height: 1.2;
   }
   h1 {
@@ -92,20 +95,6 @@
   .prose p {
     margin-bottom: 2em;
   }
-  .prose ul,
-  .prose ol {
-    margin: 0 0 1.5em;
-    padding-left: 1.5em;
-  }
-  .prose ul {
-    list-style: disc;
-  }
-  .prose ol {
-    list-style: decimal;
-  }
-  .prose li {
-    margin-bottom: 0.25em;
-  }
   textarea {
     width: 100%;
     font-size: 16px;
@@ -129,7 +118,9 @@
   pre {
     padding: 1.5em;
     border-radius: 8px;
-    background-color: rgb(var(--gray-light));
+    /* Long code lines scroll within the block instead of spilling past the
+       rounded frame. The Shiki highlighter paints the background inline
+       (github-dark); don't set a light background here that would fight it. */
     overflow-x: auto;
   }
   pre > code {

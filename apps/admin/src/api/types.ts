@@ -68,6 +68,7 @@ export interface UploadItem {
   size: number;
   uploaded: string;
   contentType: string | null;
+  postId: number | null;
 }
 
 export interface UploadListResult {
