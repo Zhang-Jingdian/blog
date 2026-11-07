@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
-import { deletePost, listPosts } from "@/api/client";
+import { deletePost, exportPost, listPosts } from "@/api/client";
 import type { PostListItem } from "@/api/types";
 import defaultCover from "@/assets/default-cover.png";
 
@@ -14,6 +14,7 @@ const status = ref("all");
 const q = ref("");
 const loading = ref(false);
 const error = ref("");
+const exportingId = ref<number | null>(null);
 
 async function load() {
   loading.value = true;
@@ -60,6 +61,29 @@ async function remove(post: PostListItem) {
     await load();
   } catch (e) {
     error.value = e instanceof Error ? e.message : "Failed to delete post";
+  }
+}
+
+// Download the post export (zip: markdown + the whole media library). Guarded
+// so only one export runs at a time; the clicked card shows "Exporting…".
+async function exportThis(post: PostListItem) {
+  if (exportingId.value !== null) return;
+  error.value = "";
+  exportingId.value = post.id;
+  try {
+    const { blob, filename } = await exportPost(post.id);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : "Export failed";
+  } finally {
+    exportingId.value = null;
   }
 }
 
@@ -127,6 +151,13 @@ onMounted(load);
           </span>
         </div>
         <div class="grid grid-flow-col items-center justify-end gap-2">
+          <button
+            class="cursor-pointer rounded-md px-2.5 py-1 text-sm font-bold text-accent hover:bg-soft disabled:opacity-50"
+            :disabled="exportingId === post.id"
+            @click="exportThis(post)"
+          >
+            {{ exportingId === post.id ? "Exporting…" : "Export" }}
+          </button>
           <RouterLink
             :to="`/posts/${post.id}/edit`"
             class="rounded-md bg-accent px-2.5 py-1 text-sm font-bold text-white no-underline hover:bg-accent-dark"

@@ -8,6 +8,7 @@
         "@types/better-sqlite3": "^7.6.12",
         "better-sqlite3": "^13.0.3",
         "drizzle-orm": "^0.45.4",
+        "fflate": "^0.8.3",
         "hono": "^4.13.16",
         "valibot": "^1.5.0",
         "vite": "catalog:",
@@ -48,17 +49,6 @@
         "vite": "catalog:",
         "vite-plus": "catalog:",
         "void": "^1.5.0",
-      },
-    },
-    "apps/test": {
-      "name": "test",
-      "version": "0.0.1",
-      "dependencies": {
-        "@astrojs/mdx": "^8.1.2",
-        "@astrojs/rss": "^4.0.19",
-        "@astrojs/sitemap": "^3.7.4",
-        "astro": "^7.4.5",
-        "sharp": "^0.35.0",
       },
     },
     "apps/website": {
@@ -1360,8 +1350,6 @@
     "tapable": ["tapable@2.3.3", "", {}, "sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A=="],
 
     "terminal-link": ["terminal-link@5.0.0", "", { "dependencies": { "ansi-escapes": "^7.0.0", "supports-hyperlinks": "^4.1.0" } }, "sha512-qFAy10MTMwjzjU8U16YS4YoZD+NQLHzLssFMNqgravjbvIPNiqkGFR4yjhJfmY9R5OFU7+yHxc6y+uGHkKwLRA=="],
-
-    "test": ["test@workspace:apps/test"],
 
     "three": ["three@0.187.0", "", {}, "sha512-Qiu7R+Cmh8CstZsY1uJOSWnVlfo7ZtNLV7mF8Jltk3LB3AtDu9cRZlcnRKkAk8Y4z6KKw35z7Y7Urd7jWY8etA=="],
 

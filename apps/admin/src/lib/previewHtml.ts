@@ -109,6 +109,29 @@ pre {
 pre > code {
   all: unset;
 }
+.code-block {
+  position: relative;
+  margin: 1em 0;
+}
+.code-block pre {
+  margin: 0;
+}
+.code-copy {
+  position: absolute;
+  top: 0.6em;
+  right: 0.6em;
+  padding: 0.2em 0.6em;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e1e4e8;
+  font-size: 0.75em;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.code-copy:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
 blockquote {
   border-left: 4px solid var(--accent);
   padding: 0 0 0 20px;
@@ -254,6 +277,35 @@ export function buildPreviewHtml(data: PreviewData): string {
 
   </article>
 </main>
+<script>
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  const btn = target instanceof Element ? target.closest(".code-copy") : null;
+  if (!btn) return;
+  const code = btn.closest(".code-block")?.querySelector("code");
+  if (!code) return;
+  const text = code.textContent ?? "";
+  const original = btn.textContent;
+  const done = () => {
+    btn.textContent = "Copied!";
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  };
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => {});
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    done();
+  }
+});
+</script>
 </body>
 </html>`;
 }

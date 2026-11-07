@@ -85,6 +85,33 @@ export function deletePost(id: number): Promise<{ deleted: boolean }> {
   return request<{ deleted: boolean }>(`/api/admin/posts/${id}`, { method: "DELETE" });
 }
 
+// Fetch a post export (a zip of `<slug>.md` + `file/` media). The endpoint
+// returns raw bytes, so this bypasses the JSON `request` helper and hands back
+// the blob plus the server-suggested filename for the browser download.
+export async function exportPost(id: number): Promise<{ blob: Blob; filename: string }> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/posts/${id}/export`, {
+    credentials: "include",
+  });
+  if (!res.ok) {
+    let message = `Export failed (${res.status})`;
+    try {
+      const body = (await res.json()) as { message?: string };
+      if (body.message) message = body.message;
+    } catch {
+      // Non-JSON error body — keep the generic message.
+    }
+    throw new ApiError(message);
+  }
+  const blob = await res.blob();
+  const filename = parseContentDisposition(res.headers.get("content-disposition")) ?? "post.zip";
+  return { blob, filename };
+}
+
+function parseContentDisposition(header: string | null): string | null {
+  if (!header) return null;
+  return /filename="([^"]+)"/i.exec(header)?.[1] ?? null;
+}
+
 export function uploadImage(file: Blob, postId?: number): Promise<{ url: string; key: string }> {
   const qs = postId ? `?postId=${postId}` : "";
   return request<{ url: string; key: string }>(`/api/admin/uploads${qs}`, {

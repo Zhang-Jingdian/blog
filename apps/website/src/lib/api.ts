@@ -159,14 +159,22 @@ function escapeHtml(text: string): string {
 // marked's renderer methods run synchronously — an `async code` renderer would
 // be stringified to "[object Promise]" instead of awaited — so the highlighter
 // is loaded ahead of time and codeToHtml() is called synchronously here.
+// Wrap a highlighted `<pre>` in a container that carries a copy button. The
+// button reads the raw code back off the `<code>` element when clicked.
+function codeBlock(preHtml: string): string {
+  return `<div class="code-block"><button type="button" class="code-copy" aria-label="Copy code">Copy</button>${preHtml}</div>`;
+}
+
 function highlightCode(code: string, lang?: string): string {
   if (!highlighter) {
-    return `<pre><code class="language-${lang ?? ""}">${escapeHtml(code)}</code></pre>`;
+    return codeBlock(`<pre><code class="language-${lang ?? ""}">${escapeHtml(code)}</code></pre>`);
   }
   try {
-    return highlighter.codeToHtml(code, { lang: lang || "plaintext", theme: "github-dark" });
+    return codeBlock(
+      highlighter.codeToHtml(code, { lang: lang || "plaintext", theme: "github-dark" }),
+    );
   } catch {
-    return highlighter.codeToHtml(code, { lang: "plaintext", theme: "github-dark" });
+    return codeBlock(highlighter.codeToHtml(code, { lang: "plaintext", theme: "github-dark" }));
   }
 }
 

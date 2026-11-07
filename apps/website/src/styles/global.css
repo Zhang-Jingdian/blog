@@ -95,6 +95,22 @@
   .prose p {
     margin-bottom: 2em;
   }
+  /* Tailwind's preflight resets list markers/margins; restore them so markdown
+     lists render (the preview pane has no preflight, which is why it worked). */
+  .prose ul,
+  .prose ol {
+    margin: 0 0 1.5em;
+    padding-left: 1.5em;
+  }
+  .prose ul {
+    list-style: disc;
+  }
+  .prose ol {
+    list-style: decimal;
+  }
+  .prose li {
+    margin-bottom: 0.25em;
+  }
   textarea {
     width: 100%;
     font-size: 16px;
@@ -118,13 +134,36 @@
   pre {
     padding: 1.5em;
     border-radius: 8px;
-    /* Long code lines scroll within the block instead of spilling past the
-       rounded frame. The Shiki highlighter paints the background inline
+    /* Long code lines scroll horizontally instead of wrapping (the markdown
+       source is untouched). The Shiki highlighter paints the background inline
        (github-dark); don't set a light background here that would fight it. */
     overflow-x: auto;
   }
   pre > code {
     all: unset;
+  }
+  .code-block {
+    position: relative;
+    margin: 1em 0;
+  }
+  .code-block pre {
+    margin: 0;
+  }
+  .code-copy {
+    position: absolute;
+    top: 0.6em;
+    right: 0.6em;
+    padding: 0.2em 0.6em;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e1e4e8;
+    font-size: 0.75em;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+  .code-copy:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
   blockquote {
     border-left: 4px solid var(--accent);

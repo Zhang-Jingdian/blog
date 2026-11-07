@@ -245,6 +245,11 @@ onMounted(async () => {
   loading.value = true;
   await Promise.all([loadRefs(), loadPost()]);
   loading.value = false;
+  // The form (and its textareas) only render once `loading` is false, so run the
+  // auto-grow after that render — the watch above fired while the description
+  // textarea wasn't mounted yet.
+  await nextTick();
+  autosizeDescription();
 });
 </script>
 

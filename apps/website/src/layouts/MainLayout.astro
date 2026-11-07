@@ -26,5 +26,36 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION, image, mainClass } =
       <slot />
     </main>
     <Footer />
+    <script>
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        const btn = target instanceof Element ? target.closest(".code-copy") : null;
+        if (!btn) return;
+        const code = btn.closest(".code-block")?.querySelector("code");
+        if (!code) return;
+        const text = code.textContent ?? "";
+        const original = btn.textContent;
+        const done = () => {
+          btn.textContent = "Copied!";
+          setTimeout(() => {
+            btn.textContent = original;
+          }, 1500);
+        };
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(() => {});
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.setAttribute("readonly", "");
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          ta.remove();
+          done();
+        }
+      });
+    </script>
   </body>
 </html>
