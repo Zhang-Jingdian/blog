@@ -4,6 +4,13 @@ import MainLayout from '../../layouts/MainLayout.astro'
 const username = 'Zhang-Jingdian'
 const profileUrl = `https://github.com/${username}`
 const avatarUrl = `https://github.com/${username}.png?size=240`
+// Back face QR code: white modules with a fully transparent background,
+// so it blends directly into the blue card.
+// quickchart's `light` param accepts 8-digit hex (last two are alpha); 00000000 = transparent.
+const qrUrl =
+  'https://quickchart.io/qr' +
+  `?text=${encodeURIComponent(profileUrl)}` +
+  '&size=400&margin=2&ecLevel=M&dark=ffffff&light=00000000'
 ---
 
 <MainLayout title={`GitHub · ${username}`} description={`GitHub profile of ${username}`}>
@@ -13,6 +20,7 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
     <div
       class="stage"
       data-card-stage
+      data-username={username}
       data-api={`https://api.github.com/users/${username}`}
     >
       <div class="card" data-card>
@@ -37,7 +45,8 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
             />
             <div class="id">
               <p class="eyebrow">GitHub</p>
-              <h2 class="login">@{username}</h2>
+              <h2 class="name" data-fullname>{username}</h2>
+              <p class="login">@{username}</p>
             </div>
             <svg class="mark" viewBox="0 0 16 16" aria-hidden="true">
               <path
@@ -69,16 +78,32 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
 
         <!-- Back face -->
         <div class="face face-back" aria-hidden="true">
-          <svg class="back-mark" viewBox="0 0 16 16">
-            <path
-              fill="currentColor"
-              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
-            ></path>
-          </svg>
-          <div class="back-copy">
-            <p class="back-eyebrow">Always building</p>
-            <p class="back-name">@{username}</p>
+          <header class="back-head">
+            <svg class="back-mark" viewBox="0 0 16 16">
+              <path
+                fill="currentColor"
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+              ></path>
+            </svg>
+            <div class="back-copy">
+              <p class="back-eyebrow">Scan to connect</p>
+              <p class="back-name">@{username}</p>
+            </div>
+          </header>
+
+          <div class="qr-wrap">
+            <img
+              class="qr"
+              src={qrUrl}
+              alt=""
+              width="400"
+              height="400"
+              loading="lazy"
+              decoding="async"
+              draggable="false"
+            />
           </div>
+
           <p class="back-url">github.com/{username}</p>
         </div>
       </div>
@@ -146,6 +171,8 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
     background: var(--accent);
     color: #fff;
     box-shadow: 0 28px 70px rgba(var(--black), 0.32);
+    gap: 0.6rem;
+    overflow: hidden;
   }
 
   .brand {
@@ -162,6 +189,8 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
   }
   .id {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
   .eyebrow {
     margin: 0 0 0.2rem;
@@ -171,12 +200,22 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
     text-transform: uppercase;
     color: rgb(var(--gray));
   }
-  .login {
+  .name {
     margin: 0;
     font-size: clamp(1.15rem, 4.2vw, 1.5rem);
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .login {
+    margin: 0.1rem 0 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.55);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -236,42 +275,74 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
     white-space: nowrap;
     color: rgba(255, 255, 255, 0.82);
   }
-  .arrow {
-    flex-shrink: 0;
-    transition: transform 0.25s ease;
-  }
-  .face-front:hover .arrow {
-    transform: translateX(5px);
-  }
 
+  /* ---------- Back face ---------- */
+  .back-head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+    flex-shrink: 0;
+  }
   .back-mark {
-    width: 64px;
-    height: 64px;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
     opacity: 0.85;
   }
   .back-copy {
-    margin-top: auto;
+    min-width: 0;
   }
   .back-eyebrow {
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.15rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.18em;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    opacity: 0.7;
+    opacity: 0.72;
   }
   .back-name {
     margin: 0;
-    font-size: clamp(1.3rem, 4.8vw, 1.8rem);
+    font-size: clamp(1.05rem, 3.8vw, 1.3rem);
     font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
+
+  /* QR container: takes the remaining height without squeezing the text above/below */
+  .qr-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  /* Transparent background + white modules blends into the blue card;
+     the surrounding blue acts as the natural quiet zone. */
+  .qr {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    background: transparent;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
   .back-url {
     margin: 0;
+    flex-shrink: 0;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.78rem;
-    opacity: 0.75;
+    font-size: 0.74rem;
+    opacity: 0.78;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .hint {
@@ -311,6 +382,20 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
       font-size: 0.72rem;
       padding: 0.5rem 0.75rem;
     }
+
+    .face-back {
+      gap: 0.5rem;
+    }
+    .back-mark {
+      width: 26px;
+      height: 26px;
+    }
+    .back-eyebrow {
+      font-size: 0.56rem;
+    }
+    .back-url {
+      font-size: 0.68rem;
+    }
   }
 </style>
 
@@ -324,8 +409,9 @@ const avatarUrl = `https://github.com/${username}.png?size=240`
       Math.min(max, Math.max(min, v))
 
 // ---------- Live public stats ----------
-// Only counts are shown; name, bio and location are intentionally omitted.
+// Show the public name and counts only; bio and location stay omitted.
 type GithubStats = {
+  name: string | null
   public_repos: number
   followers: number
   following: number
@@ -340,6 +426,11 @@ if (api) {
       return r.json() as Promise<GithubStats>
     })
     .then((user) => {
+      // Real name from GitHub, fall back to the username if not set
+      const nameEl = stage.querySelector<HTMLElement>('[data-fullname]')
+      const fallback = stage.dataset.username || ''
+      if (nameEl) nameEl.textContent = user.name || fallback
+
       for (const key of STAT_KEYS) {
         const el = stage.querySelector<HTMLElement>(`[data-count="${key}"]`)
         const value = user[key]
