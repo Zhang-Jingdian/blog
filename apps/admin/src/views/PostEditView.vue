@@ -77,8 +77,12 @@ const tagsLabel = computed(() => (form.tagIds.length ? `Tags (${form.tagIds.leng
 function autosizeDescription() {
   const el = descriptionEl.value;
   if (!el) return;
+  // Same as the content editor: keep the viewport put while the box resizes.
+  const y = window.scrollY;
   el.style.height = "auto";
   el.style.height = `${el.scrollHeight}px`;
+  window.scrollTo(0, y);
+  requestAnimationFrame(() => window.scrollTo(0, y));
 }
 
 watch(

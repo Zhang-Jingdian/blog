@@ -27,8 +27,13 @@ function rememberSelection() {
 function autosize() {
   const el = ta.value;
   if (!el) return;
+  // Resizing the box shifts the layout below it and can make the browser scroll
+  // the caret into view; pin the viewport so typing never moves the page.
+  const y = window.scrollY;
   el.style.height = "auto";
   el.style.height = `${el.scrollHeight}px`;
+  window.scrollTo(0, y);
+  requestAnimationFrame(() => window.scrollTo(0, y));
 }
 
 watch(model, async () => {
