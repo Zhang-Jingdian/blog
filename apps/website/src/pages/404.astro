@@ -1,0 +1,33 @@
+---
+import MainLayout from '../layouts/MainLayout.astro'
+---
+
+<MainLayout title="404 · page not found" description="This page does not exist.">
+  <section class="relative mx-auto flex min-h-[70vh] max-w-5xl flex-col justify-center py-12">
+    <p class="font-mono text-sm uppercase tracking-widest text-muted">Error 404</p>
+
+    <h1 class="mt-4 text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl">
+      This page<br />doesn't exist.
+    </h1>
+
+    <p class="mt-8 max-w-md text-lg leading-relaxed text-muted">
+      The link may be broken, or the post behind it was unpublished. The blog index
+      lists everything that is still live.
+    </p>
+
+    <div class="mt-10 flex flex-wrap gap-3">
+      <a
+        href="/blog"
+        class="inline-block rounded-md bg-accent px-5 py-2.5 font-medium text-white transition hover:bg-(--accent-dark)"
+      >
+        Read the blog
+      </a>
+      <a
+        href="/"
+        class="inline-block rounded-md border border-soft px-5 py-2.5 font-medium text-body transition hover:text-ink"
+      >
+        Back home
+      </a>
+    </div>
+  </section>
+</MainLayout>
