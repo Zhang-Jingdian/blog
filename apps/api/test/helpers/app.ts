@@ -3,6 +3,7 @@ import envelope from "../../middleware/01.envelope.ts";
 
 import * as postsIndex from "../../routes/api/posts/index.ts";
 import * as postBySlug from "../../routes/api/posts/[slug].ts";
+import * as feed from "../../routes/api/feed.ts";
 import * as adminPostsIndex from "../../routes/api/admin/posts/index.ts";
 import * as adminPostById from "../../routes/api/admin/posts/[id].ts";
 import * as adminPostStatus from "../../routes/api/admin/posts/[id]/status.ts";
@@ -51,6 +52,7 @@ export function createApp(): Hono {
 
   app.get("/api/posts", route(postsIndex.GET));
   app.get("/api/posts/:slug", route(postBySlug.GET));
+  app.get("/api/feed", route(feed.GET));
 
   app.get("/api/admin/posts", route(adminPostsIndex.GET));
   app.post("/api/admin/posts", route(adminPostsIndex.POST));

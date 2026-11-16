@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import { getPost, listAllPosts, listPosts, renderMarkdown } from "../src/lib/api.ts";
+import { getPost, listAllPosts, listFullPosts, listPosts, renderMarkdown } from "../src/lib/api.ts";
 
 const BASE = "http://localhost:5173";
 
@@ -115,6 +115,26 @@ describe("website listAllPosts", () => {
 
     expect(items.map((i) => i.slug)).toEqual(["a", "b", "c"]);
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+});
+
+describe("website listFullPosts", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("gets every post body from /api/feed in a single request", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        jsonEnvelope(200, { items: [{ slug: "a", content: "body", tags: [], category: null }] }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const posts = await listFullPosts();
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe(`${BASE}/api/feed`);
+    expect(posts[0]?.slug).toBe("a");
+    expect(posts[0]?.content).toBe("body");
   });
 });
 

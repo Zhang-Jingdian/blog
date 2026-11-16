@@ -42,6 +42,30 @@ describe("GET /api/posts", () => {
     expect(data.items[0]).not.toHaveProperty("content");
   });
 
+  it("includes description, category and tags in the list response", async () => {
+    const tech = await createCategory(db.db, { name: "Tech", slug: "tech" });
+    const rust = await createTag(db.db, { name: "Rust", slug: "rust" });
+    await createPost(db.db, {
+      title: "With meta",
+      slug: "with-meta",
+      description: "A short summary",
+      status: "published",
+      publishedAt: new Date("2026-03-01T00:00:00.000Z"),
+      categoryId: tech.id,
+      tagIds: [rust.id],
+    });
+
+    const res = await list();
+    const data = res.body.data as { items: Record<string, unknown>[] };
+
+    expect(data.items[0]).toMatchObject({
+      description: "A short summary",
+      category: { name: "Tech", slug: "tech" },
+      tags: [{ name: "Rust", slug: "rust" }],
+    });
+    expect(data.items[0]).not.toHaveProperty("content");
+  });
+
   it("paginates with page, pageSize, total and totalPages", async () => {
     for (let i = 0; i < 5; i += 1) {
       await createPost(db.db, {
@@ -181,5 +205,50 @@ describe("GET /api/posts/:slug", () => {
     const res = await request(app, "/api/posts/missing");
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ code: 404, message: "Post not found", data: null });
+  });
+});
+
+describe("GET /api/feed", () => {
+  let db: TestDatabase;
+  let app: ReturnType<typeof createApp>;
+
+  beforeEach(() => {
+    db = createTestDb();
+    app = createApp();
+  });
+
+  afterEach(() => db.close());
+
+  it("returns every published post with its body in one response", async () => {
+    const tech = await createCategory(db.db, { name: "Tech", slug: "tech" });
+    const rust = await createTag(db.db, { name: "Rust", slug: "rust" });
+    await createPost(db.db, {
+      title: "Older",
+      slug: "older",
+      content: "old body",
+      status: "published",
+      publishedAt: new Date("2026-01-01T00:00:00.000Z"),
+      categoryId: tech.id,
+      tagIds: [rust.id],
+    });
+    await createPost(db.db, {
+      title: "Newer",
+      slug: "newer",
+      content: "new body",
+      status: "published",
+      publishedAt: new Date("2026-02-01T00:00:00.000Z"),
+    });
+    await createPost(db.db, { title: "Draft", slug: "draft", content: "draft body" });
+
+    const res = await request(app, "/api/feed");
+    expect(res.status).toBe(200);
+    const items = (res.body.data as { items: Record<string, unknown>[] }).items;
+
+    expect(items.map((item) => item.slug)).toEqual(["newer", "older"]);
+    expect(items[1]).toMatchObject({
+      content: "old body",
+      category: { name: "Tech", slug: "tech" },
+      tags: [{ name: "Rust", slug: "rust" }],
+    });
   });
 });

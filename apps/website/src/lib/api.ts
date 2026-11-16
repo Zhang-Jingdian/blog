@@ -8,20 +8,27 @@ export { renderMarkdown } from "@blog/shared";
 // (http://localhost:5173); production sets VITE_API_BASE_URL via CI.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5173";
 
+export interface TaxonomyRef {
+  name: string;
+  slug: string;
+}
+
+// The list endpoint returns everything a list page shows (description, category,
+// tags), so rendering the blog index no longer needs one request per post.
 export interface PostListItem {
   id: number;
   title: string;
   slug: string;
+  description: string | null;
   coverUrl: string | null;
   publishedAt: string;
+  updatedAt: string;
+  category: TaxonomyRef | null;
+  tags: TaxonomyRef[];
 }
 
 export interface Post extends PostListItem {
-  description: string | null;
   content: string;
-  updatedAt: string;
-  category: { name: string; slug: string } | null;
-  tags: { name: string; slug: string }[];
 }
 
 export type PostListResult = Paginated<PostListItem>;
@@ -84,9 +91,10 @@ export async function getPost(slug: string): Promise<Post | null> {
   return body.data;
 }
 
-// Full posts (with body/category/tags) for consumers that need them, e.g. RSS.
+// Every published post with its body, in a single request. Consumers that need
+// post bodies during the build (RSS, getStaticPaths) use this instead of listing
+// posts and then fetching each one.
 export async function listFullPosts(): Promise<Post[]> {
-  const items = await listAllPosts();
-  const posts = await Promise.all(items.map((item) => getPost(item.slug)));
-  return posts.filter((post): post is Post => post !== null);
+  const body = await get<{ items: Post[] }>("/api/feed");
+  return body.items;
 }

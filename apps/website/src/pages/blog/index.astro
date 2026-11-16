@@ -2,22 +2,20 @@
 import MainLayout from '../../layouts/MainLayout.astro'
 import FormattedDate from '../../components/FormattedDate.astro'
 import defaultCover from '../../assets/defualt-cover.png'
-import { listFullPosts } from '../../lib/api'
+import { listAllPosts } from '../../lib/api'
 
-const posts = (await listFullPosts()).map((post) => ({
-  title: post.title,
-  slug: post.slug,
-  coverUrl: post.coverUrl,
-  publishedAt: post.publishedAt,
+// The list endpoint already carries description/category/tags, so one pass over
+// its pages is enough — no per-post detail requests at build time.
+const posts = (await listAllPosts()).map((post) => ({
+  ...post,
   description: post.description ?? '',
-  category: post.category ? { name: post.category.name, slug: post.category.slug } : null,
-  tags: post.tags.map((tag) => ({ name: tag.name, slug: tag.slug })),
 }))
 ---
 
 <MainLayout>
   <section>
     <form
+      id="search"
       class="mb-8 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4"
       method="get"
       action="/blog"
@@ -80,7 +78,22 @@ const posts = (await listFullPosts()).map((post) => ({
     const pageSize = 10;
 
     const input = document.getElementById('q-input');
-    if (input) input.value = params.get('q') ?? '';
+    if (input instanceof HTMLInputElement) input.value = params.get('q') ?? '';
+
+    // The page is static, so a plain GET submit would drop any category/tag
+    // filter that lives only in the current URL. Merge the query into the
+    // existing parameters instead, and reset to the first page.
+    const form = document.getElementById('search');
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const next = new URLSearchParams(location.search);
+      const value = input instanceof HTMLInputElement ? input.value.trim() : '';
+      if (value) next.set('q', value);
+      else next.delete('q');
+      next.delete('page');
+      const search = next.toString();
+      location.href = search ? `/blog?${search}` : '/blog';
+    });
 
     const items = Array.from(document.querySelectorAll('#posts > li'));
     const matches = items.filter((li) => {
