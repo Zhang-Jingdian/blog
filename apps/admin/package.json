@@ -12,9 +12,7 @@
     "format": "vp fmt src/"
   },
   "dependencies": {
-    "marked": "^18.1.3",
-    "marked-footnote": "^1.4.0",
-    "shiki": "^4.6.0",
+    "@blog/shared": "workspace:*",
     "vue": "rc",
     "vue-router": "^5.3.1"
   },

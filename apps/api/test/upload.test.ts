@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
-import { AppError } from "../../apps/api/src/lib/error.ts";
-import {
-  matchesImageMagic,
-  parseUploadedImage,
-  toUploadItem,
-} from "../../apps/api/src/lib/upload.ts";
+import { AppError } from "../src/lib/error.ts";
+import { matchesImageMagic, parseUploadedImage, toUploadItem } from "../src/lib/upload.ts";
 
 function bytes(...nums: number[]): Uint8Array {
   return new Uint8Array(nums);

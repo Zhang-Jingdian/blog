@@ -1,5 +1,5 @@
 {
-  "extends": "./.void/tsconfig.json",
+  "extends": ["../../tsconfig.base.json", "./.void/tsconfig.json"],
   "compilerOptions": {
     "target": "es2023",
     "module": "esnext",

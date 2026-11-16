@@ -96,14 +96,43 @@ describe("admin posts", () => {
       expect(res.body.message).toBe("Slug already exists");
     });
 
-    it("derives a fallback slug for a title with no slug characters", async () => {
+    it("derives a Chinese slug from a Chinese title", async () => {
       const res = await request(
         app,
         "/api/admin/posts",
-        jsonInit("POST", { title: "纯中文标题", content: "x" }),
+        jsonInit("POST", { title: "我的第一篇文章", content: "x" }),
+      );
+      expect(res.status).toBe(201);
+      expect(res.body.data.slug).toBe("我的第一篇文章");
+    });
+
+    it("accepts an explicit Chinese slug", async () => {
+      const res = await request(
+        app,
+        "/api/admin/posts",
+        jsonInit("POST", { title: "About", slug: "关于-我", content: "x" }),
+      );
+      expect(res.status).toBe(201);
+      expect(res.body.data.slug).toBe("关于-我");
+    });
+
+    it("derives a fallback slug for a title with no letters or digits", async () => {
+      const res = await request(
+        app,
+        "/api/admin/posts",
+        jsonInit("POST", { title: "🎉🎉", content: "x" }),
       );
       expect(res.status).toBe(201);
       expect(res.body.data.slug).toMatch(/^[a-z0-9-]+$/);
+    });
+
+    it("rejects a slug with characters outside letters, digits and hyphens", async () => {
+      const res = await request(
+        app,
+        "/api/admin/posts",
+        jsonInit("POST", { title: "Bad", slug: "有 空格", content: "x" }),
+      );
+      expect(res.status).toBe(400);
     });
 
     it("rejects an unknown category or tag", async () => {

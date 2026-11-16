@@ -21,7 +21,11 @@ const pageSizeParam = v.pipe(
 
 const title = v.pipe(v.string(), v.minLength(1), v.maxLength(200));
 const content = v.pipe(v.string(), v.minLength(1));
-const slug = v.pipe(v.string(), v.regex(/^[a-z0-9-]+$/));
+// Letters and digits of any script (so Chinese slugs are allowed) plus hyphens.
+const slug = v.pipe(
+  v.string(),
+  v.regex(/^[\p{L}\p{N}-]+$/u, "Slug may only contain letters, digits and hyphens"),
+);
 const description = v.nullable(v.pipe(v.string(), v.maxLength(500)));
 const coverUrl = v.nullable(v.pipe(v.string(), v.url()));
 const categoryId = v.nullable(positiveInt);

@@ -1,12 +1,14 @@
 ## Development
 
-When starting the dev server, use background mode:
+Start it from the repository root — the website needs the API to be running,
+because every page fetches posts at build/request time:
 
-```
-astro dev --background
+```bash
+vp run dev
 ```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+That starts api (5173) → admin (5174) → website (4321) in order. To run only
+this app, use `vp run dev:website` (the API must already be up).
 
 ## Documentation
 

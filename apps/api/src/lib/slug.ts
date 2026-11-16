@@ -1,15 +1,18 @@
-// Derive a slug from a human-readable name. Returns an empty string when the
-// name contains no slug-compatible characters (e.g. a pure-Chinese title).
+// Derive a slug from a human-readable name. Letters and digits of any script are
+// kept, so a Chinese title yields a Chinese slug (`我的第一篇文章`) and the URL
+// reads as the title. Every run of other characters (spaces, punctuation,
+// symbols, emoji) collapses into a single hyphen.
+// NFKC first, so full-width input folds to its ASCII form (`ＡＢ` → `ab`).
 export function slugify(name: string): string {
   return name
+    .normalize("NFKC")
     .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/-+/g, "-")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "");
 }
 
-// A unique-enough token for names with no slug-compatible characters (e.g. a
-// pure-Chinese title), so slug generation never produces an empty string.
+// A unique-enough token for names with no letters or digits at all (e.g. a title
+// that is only emoji), so slug generation never produces an empty string.
 export function fallbackSlug(): string {
   return `${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}`;
 }

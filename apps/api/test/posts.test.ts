@@ -163,6 +163,20 @@ describe("GET /api/posts/:slug", () => {
     expect(res.body).toEqual({ code: 404, message: "Post not found", data: null });
   });
 
+  it("resolves a percent-encoded Chinese slug", async () => {
+    await createPost(db.db, {
+      title: "我的第一篇文章",
+      slug: "我的第一篇文章",
+      status: "published",
+    });
+
+    // Browsers percent-encode non-ASCII path segments; the router must decode
+    // them before the slug lookup.
+    const res = await request(app, `/api/posts/${encodeURIComponent("我的第一篇文章")}`);
+    expect(res.status).toBe(200);
+    expect((res.body.data as { slug: string }).slug).toBe("我的第一篇文章");
+  });
+
   it("returns 404 for an unknown slug", async () => {
     const res = await request(app, "/api/posts/missing");
     expect(res.status).toBe(404);

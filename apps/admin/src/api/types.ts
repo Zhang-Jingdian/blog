@@ -1,3 +1,5 @@
+import type { Paginated } from "@blog/shared";
+
 export type PostStatus = "draft" | "published";
 
 export type TaxonomyKind = "tag" | "category";
@@ -13,13 +15,7 @@ export interface PostListItem {
   category: { name: string; slug: string } | null;
 }
 
-export interface PostListResult {
-  items: PostListItem[];
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-}
+export type PostListResult = Paginated<PostListItem>;
 
 export interface Post {
   id: number;
@@ -71,10 +67,4 @@ export interface UploadItem {
   postId: number | null;
 }
 
-export interface UploadListResult {
-  items: UploadItem[];
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-}
+export type UploadListResult = Paginated<UploadItem>;

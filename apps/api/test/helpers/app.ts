@@ -1,15 +1,15 @@
 import { Hono } from "hono";
-import envelope from "../../../apps/api/middleware/01.envelope.ts";
+import envelope from "../../middleware/01.envelope.ts";
 
-import * as postsIndex from "../../../apps/api/routes/api/posts/index.ts";
-import * as postBySlug from "../../../apps/api/routes/api/posts/[slug].ts";
-import * as adminPostsIndex from "../../../apps/api/routes/api/admin/posts/index.ts";
-import * as adminPostById from "../../../apps/api/routes/api/admin/posts/[id].ts";
-import * as adminPostStatus from "../../../apps/api/routes/api/admin/posts/[id]/status.ts";
-import * as adminTagsIndex from "../../../apps/api/routes/api/admin/tags/index.ts";
-import * as adminTagById from "../../../apps/api/routes/api/admin/tags/[id].ts";
-import * as adminCategoriesIndex from "../../../apps/api/routes/api/admin/categories/index.ts";
-import * as adminCategoryById from "../../../apps/api/routes/api/admin/categories/[id].ts";
+import * as postsIndex from "../../routes/api/posts/index.ts";
+import * as postBySlug from "../../routes/api/posts/[slug].ts";
+import * as adminPostsIndex from "../../routes/api/admin/posts/index.ts";
+import * as adminPostById from "../../routes/api/admin/posts/[id].ts";
+import * as adminPostStatus from "../../routes/api/admin/posts/[id]/status.ts";
+import * as adminTagsIndex from "../../routes/api/admin/tags/index.ts";
+import * as adminTagById from "../../routes/api/admin/tags/[id].ts";
+import * as adminCategoriesIndex from "../../routes/api/admin/categories/index.ts";
+import * as adminCategoryById from "../../routes/api/admin/categories/[id].ts";
 
 // Mirrors Void's `convertReturnValue` (`void/response`): a plain object or
 // array becomes JSON, a string becomes text/html, and a Response passes through.

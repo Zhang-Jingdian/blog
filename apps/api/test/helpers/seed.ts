@@ -1,4 +1,4 @@
-import { category, post, postTag, tag } from "../../../apps/api/db/schema.ts";
+import { category, post, postTag, tag } from "../../db/schema.ts";
 import type { TestDb } from "./db.ts";
 
 interface CategoryInput {

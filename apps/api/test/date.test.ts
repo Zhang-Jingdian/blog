@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { iso } from "../../apps/api/src/lib/date.ts";
+import { iso } from "../src/lib/date.ts";
 
 describe("iso", () => {
   it("serializes a Date to an ISO UTC string", () => {

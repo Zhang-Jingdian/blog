@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { __setTestDb } from "./void-db.ts";
 
-const migrationsFolder = fileURLToPath(new URL("../../../apps/api/db/migrations", import.meta.url));
+const migrationsFolder = fileURLToPath(new URL("../../db/migrations", import.meta.url));
 
 export type TestDb = ReturnType<typeof createTestDb>["db"];
 

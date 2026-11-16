@@ -14,11 +14,12 @@ import MediaLibrary from "@/components/MediaLibrary.vue";
 import Modal from "@/components/Modal.vue";
 import RichTextEditor from "@/components/RichTextEditor.vue";
 import { buildPreviewHtml } from "@/lib/previewHtml";
-import { renderMarkdown } from "@/lib/renderMarkdown";
+import { renderMarkdown } from "@blog/shared";
 import type { PostInput, PostStatus, Taxonomy } from "@/api/types";
 
 interface PostForm {
   title: string;
+  slug: string;
   content: string;
   description: string;
   coverUrl: string;
@@ -56,6 +57,7 @@ const pendingKeys = new Set<string>();
 
 const form = reactive<PostForm>({
   title: "",
+  slug: "",
   content: "",
   description: "",
   coverUrl: "",
@@ -109,6 +111,7 @@ async function loadPost() {
   try {
     const p = await getPost(id);
     form.title = p.title;
+    form.slug = p.slug;
     form.content = p.content;
     form.description = p.description ?? "";
     form.coverUrl = p.coverUrl ?? "";
@@ -214,11 +217,28 @@ async function openPreview() {
   win.document.close();
 }
 
+// Mirror of the API's slug rule (letters/digits of any script + hyphens). The
+// field is optional: leaving it empty lets the API derive the slug from the
+// title, which is what most posts want.
+const SLUG_RE = /^[\p{L}\p{N}-]+$/u;
+
+// Whitespace in a pasted title would fail server validation, so fold it into the
+// separator the slug format expects before it is sent.
+function normalizeSlugField() {
+  form.slug = form.slug.trim().replace(/\s+/g, "-");
+}
+
 async function submit() {
   error.value = "";
+  const slug = form.slug.trim();
+  if (slug && !SLUG_RE.test(slug)) {
+    error.value = "Slug may only contain letters, digits and hyphens";
+    return;
+  }
   saving.value = true;
   const input: PostInput = {
     title: form.title,
+    slug: slug || undefined,
     content: form.content,
     description: form.description.trim() || null,
     coverUrl: form.coverUrl.trim() || null,
@@ -265,6 +285,19 @@ onMounted(async () => {
       <label class="grid gap-1 text-body">
         Title
         <input v-model="form.title" required maxlength="200" class="field" />
+      </label>
+
+      <label class="grid gap-1 text-body">
+        Slug
+        <input
+          v-model="form.slug"
+          class="field font-mono"
+          placeholder="Leave empty to derive it from the title"
+          @blur="normalizeSlugField"
+        />
+        <span class="text-muted">
+          The URL segment after /blog/ — Chinese titles work too, e.g. 我的第一篇文章
+        </span>
       </label>
 
       <label class="grid gap-1 text-body">

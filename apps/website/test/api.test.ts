@@ -1,10 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-import {
-  getPost,
-  listAllPosts,
-  listPosts,
-  renderMarkdown,
-} from "../../apps/website/src/lib/api.ts";
+import { getPost, listAllPosts, listPosts, renderMarkdown } from "../src/lib/api.ts";
 
 const BASE = "http://localhost:5173";
 

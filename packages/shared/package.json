@@ -1,0 +1,14 @@
+{
+  "name": "@blog/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "marked": "^18.1.3",
+    "marked-footnote": "^1.4.0",
+    "shiki": "^4.6.0"
+  }
+}

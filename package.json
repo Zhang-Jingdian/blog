@@ -4,13 +4,15 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "apps/*",
-    "tools/*"
+    "apps/*"
   ],
   "type": "module",
   "scripts": {
-    "ready": "vp check && vp run -r test && vp run -r build",
-    "dev": "vp run website#dev",
+    "ready": "vp check && vp test run",
+    "dev": "node scripts/dev.mjs",
+    "dev:api": "vp run api#dev",
+    "dev:admin": "vp run admin#dev",
+    "dev:website": "vp run website#dev",
     "prepare": "vp config"
   },
   "devDependencies": {

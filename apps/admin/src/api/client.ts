@@ -1,3 +1,5 @@
+import type { Envelope } from "@blog/shared";
+
 import type {
   Post,
   PostInput,
@@ -11,12 +13,6 @@ import type {
 // Empty in dev (Vite proxies /api to the local API); production sets
 // VITE_API_BASE_URL via CI (.github/workflows/deploy.yml) to the deployed API Worker.
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
-
-interface Envelope<T> {
-  code: number;
-  message: string;
-  data: T;
-}
 
 export class ApiError extends Error {
   readonly issues?: unknown;

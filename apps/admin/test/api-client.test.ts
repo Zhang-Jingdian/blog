@@ -9,7 +9,7 @@ import {
   listUploads,
   replaceUpload,
   uploadImage,
-} from "../../apps/admin/src/api/client.ts";
+} from "../src/api/client.ts";
 
 function jsonEnvelope<T>(code: number, data: T, status = 200): Response {
   return new Response(JSON.stringify({ code, message: "ok", data }), {
