@@ -246,29 +246,6 @@ describe("admin posts", () => {
     });
   });
 
-  describe("PATCH /api/admin/posts/:id/status", () => {
-    it("flips draft to published and pins publishedAt", async () => {
-      const post = await createPost(db.db, { title: "Post", slug: "post", status: "draft" });
-      const res = await request(
-        app,
-        `/api/admin/posts/${post.id}/status`,
-        jsonInit("PATCH", { status: "published" }),
-      );
-      expect(res.status).toBe(200);
-      expect(data(res).status).toBe("published");
-      expect(data(res).publishedAt).not.toBeNull();
-    });
-
-    it("returns 404 for a missing post", async () => {
-      const res = await request(
-        app,
-        "/api/admin/posts/999/status",
-        jsonInit("PATCH", { status: "published" }),
-      );
-      expect(res.status).toBe(404);
-    });
-  });
-
   describe("DELETE /api/admin/posts/:id", () => {
     it("deletes the post and its tag links", async () => {
       const tag = await createTag(db.db, { name: "Tag", slug: "tag" });

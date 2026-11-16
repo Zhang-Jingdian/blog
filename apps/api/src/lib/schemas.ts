@@ -44,9 +44,6 @@ export const postBody = v.object({
 });
 export type PostBody = v.InferOutput<typeof postBody>;
 
-export const patchStatusBody = v.object({ status });
-export type PatchStatusBody = v.InferOutput<typeof patchStatusBody>;
-
 const name = v.pipe(v.string(), v.minLength(1), v.maxLength(50));
 
 export const taxonomyBody = v.object({

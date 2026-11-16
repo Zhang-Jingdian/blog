@@ -6,7 +6,6 @@ import * as postBySlug from "../../routes/api/posts/[slug].ts";
 import * as feed from "../../routes/api/feed.ts";
 import * as adminPostsIndex from "../../routes/api/admin/posts/index.ts";
 import * as adminPostById from "../../routes/api/admin/posts/[id].ts";
-import * as adminPostStatus from "../../routes/api/admin/posts/[id]/status.ts";
 import * as adminTagsIndex from "../../routes/api/admin/tags/index.ts";
 import * as adminTagById from "../../routes/api/admin/tags/[id].ts";
 import * as adminCategoriesIndex from "../../routes/api/admin/categories/index.ts";
@@ -59,7 +58,6 @@ export function createApp(): Hono {
   app.get("/api/admin/posts/:id", route(adminPostById.GET));
   app.put("/api/admin/posts/:id", route(adminPostById.PUT));
   app.delete("/api/admin/posts/:id", route(adminPostById.DELETE));
-  app.patch("/api/admin/posts/:id/status", route(adminPostStatus.PATCH));
 
   app.get("/api/admin/tags", route(adminTagsIndex.GET));
   app.post("/api/admin/tags", route(adminTagsIndex.POST));
