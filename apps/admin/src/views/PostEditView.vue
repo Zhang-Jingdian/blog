@@ -296,7 +296,7 @@ onMounted(async () => {
           @blur="normalizeSlugField"
         />
         <span class="text-muted">
-          The URL segment after /blog/ — Chinese titles work too, e.g. 我的第一篇文章
+          The URL segment after /blog/ — non-Latin titles keep their own characters
         </span>
       </label>
 

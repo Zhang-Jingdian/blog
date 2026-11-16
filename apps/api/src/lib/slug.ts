@@ -1,6 +1,6 @@
 // Derive a slug from a human-readable name. Letters and digits of any script are
-// kept, so a Chinese title yields a Chinese slug (`我的第一篇文章`) and the URL
-// reads as the title. Every run of other characters (spaces, punctuation,
+// kept, so a non-Latin title keeps its own characters in the slug and the URL
+// still reads as the title. Every run of other characters (spaces, punctuation,
 // symbols, emoji) collapses into a single hyphen.
 // NFKC first, so full-width input folds to its ASCII form (`ＡＢ` → `ab`).
 export function slugify(name: string): string {

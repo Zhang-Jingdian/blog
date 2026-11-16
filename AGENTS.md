@@ -29,3 +29,10 @@ release. Add a tool name to select part of the graph. For example, run
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
+
+## Project Conventions
+
+- **Write all code comments in English** — including JSDoc, inline notes, and comments inside config files. Chinese is only acceptable as test fixture data (e.g. a CJK title used to test slug generation) or as user-facing content.
+- Commit messages follow Conventional Commits (`feat(scope):`, `fix:`, `refactor:`, `chore(deps):`).
+- `apps/api/{routes,middleware,db}` are Void framework conventions — do not reorganize them; only `src/lib/` is free-form.
+- `apps/api` may only contain `.env` (no `.env.example`); `void/env` refuses to start when both exist.
