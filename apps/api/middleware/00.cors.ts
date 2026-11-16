@@ -1,5 +1,7 @@
 import { defineMiddleware } from "void";
 import { env } from "../env.ts";
+import { AppError } from "../src/lib/error.ts";
+import { withHeaders } from "../src/lib/http.ts";
 
 // Admin routes are called cross-origin with the Cloudflare Access cookie, so
 // they need a specific origin + credentials; public routes keep the wildcard.
@@ -33,7 +35,17 @@ export default defineMiddleware(async (c, next) => {
     return new Response(null, { status: 204, headers });
   }
 
-  await next();
+  try {
+    await next();
+  } catch (error) {
+    // Handlers signal expected failures by throwing AppError (400/401/404/…).
+    // Building the response here instead of letting Hono's onError do it keeps
+    // the CORS headers on it — without them the browser hides the status from
+    // the SPA and a rejected request looks like a network failure.
+    if (!(error instanceof AppError)) throw error;
+    c.res = withHeaders(error.getResponse(), headers);
+    return;
+  }
 
   // Apply CORS headers to the final response. The envelope middleware and route
   // handlers replace `c.res` after this middleware runs, which drops any header
