@@ -100,6 +100,85 @@ function codeBlock(preHtml: string): string {
   return `<div class="code-block"><button type="button" class="code-copy" aria-label="Copy code">Copy</button>${preHtml}</div>`;
 }
 
+// Presentational tags a post is allowed to embed. Everything else is escaped and
+// shown as literal text.
+const RAW_HTML_TAGS = new Set(["br", "kbd", "mark", "sub", "sup", "small", "del", "ins"]);
+
+// marked passes raw HTML straight through, and the site injects the result with
+// `set:html` (the admin preview does the same with document.write into a
+// same-origin window). A post containing `<script>` or `<img onerror=…>` would
+// therefore execute in the reader's browser — and in the admin's origin, where
+// the Cloudflare Access cookie is attached to same-origin requests.
+//
+// Rather than adding a full sanitiser dependency, this re-emits only the
+// allowlisted tags and *never* their attributes: every XSS payload that matters
+// (`onerror`, `onclick`, `style`, `href="javascript:"`, `srcdoc`) needs an
+// attribute, so dropping attributes removes the attack surface. Disallowed tags
+// are escaped, which keeps the text visible instead of silently deleting it.
+function sanitizeRawHtml(raw: string): string {
+  let out = "";
+  let cursor = 0;
+  for (const match of raw.matchAll(/<[^>]*>/g)) {
+    const start = match.index ?? 0;
+    out += escapeHtml(raw.slice(cursor, start));
+    cursor = start + match[0].length;
+
+    const parsed = /^<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9-]*)/.exec(match[0]);
+    const name = parsed?.[2]?.toLowerCase();
+    if (parsed && name && RAW_HTML_TAGS.has(name)) {
+      out += parsed[1] ? `</${name}>` : `<${name}>`;
+    } else {
+      out += escapeHtml(match[0]);
+    }
+  }
+  return out + escapeHtml(raw.slice(cursor));
+}
+
+const SAFE_PROTOCOLS = new Set(["http", "https", "mailto", "tel"]);
+
+function codePoint(value: number): string {
+  return Number.isInteger(value) && value >= 0 && value <= 0x10ffff
+    ? String.fromCodePoint(value)
+    : "\uFFFD";
+}
+
+// The browser decodes character references before resolving a URL, so
+// `&#106;avascript:` has to be recognized here as `javascript:`.
+function decodeEntities(text: string): string {
+  const NAMED: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    colon: ":",
+    tab: "\t",
+    newline: "\n",
+  };
+  return text
+    .replace(/&#x([0-9a-f]+);?/gi, (_, hex: string) => codePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);?/g, (_, dec: string) => codePoint(Number(dec)))
+    .replace(/&([a-z]+);/gi, (match, name: string) => NAMED[name.toLowerCase()] ?? match);
+}
+
+// marked 18 no longer filters URL schemes (its old cleanUrl helper is gone), so
+// `[x](javascript:alert(1))` would otherwise become a working link. Keep only
+// protocols that cannot execute, and let relative/anchor URLs through untouched.
+function safeUrl(raw: string): string | null {
+  // Whitespace and control characters are stripped before the scheme is read, so
+  // `java\tscript:` cannot slip through and be treated as a relative URL.
+  const normalized = decodeEntities(raw)
+    .split("")
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code > 0x20 && code !== 0x7f;
+    })
+    .join("");
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(normalized);
+  if (!scheme) return raw;
+  return SAFE_PROTOCOLS.has(scheme[1]!.toLowerCase()) ? raw : null;
+}
+
 function highlightCode(code: string, lang?: string): string {
   if (!highlighter) {
     return codeBlock(`<pre><code class="language-${lang ?? ""}">${escapeHtml(code)}</code></pre>`);
@@ -117,9 +196,19 @@ function highlightCode(code: string, lang?: string): string {
 // be stringified to "[object Promise]" instead of awaited — so the highlighter
 // is loaded ahead of time and codeToHtml() is called synchronously here.
 const markdown = new Marked({
+  // Runs before rendering, so an unsafe href never reaches the renderer.
+  walkTokens(token) {
+    if ((token.type === "link" || token.type === "image") && safeUrl(token.href) === null) {
+      token.href = "";
+    }
+  },
   renderer: {
     code({ text, lang }): string {
       return highlightCode(text, lang);
+    },
+    // Raw HTML never reaches the page as markup; see sanitizeRawHtml above.
+    html({ text }): string {
+      return sanitizeRawHtml(text);
     },
   },
 });

@@ -3,7 +3,7 @@ import { and, count, desc, eq, sql, db } from "void/db";
 import { storage } from "void/storage";
 import { upload } from "@schema";
 import { uploadListQuery, uploadPostQuery } from "../../../../src/lib/schemas.ts";
-import { parseUploadedImage, toUploadItem } from "../../../../src/lib/upload.ts";
+import { parseUploadedImage, readImageBody, toUploadItem } from "../../../../src/lib/upload.ts";
 
 type Condition = ReturnType<typeof eq>;
 
@@ -48,7 +48,7 @@ export const POST = defineHandler.withValidator({ query: uploadPostQuery })(asyn
   c,
   { query },
 ) => {
-  const bytes = await c.req.arrayBuffer();
+  const bytes = await readImageBody(c.req);
   const { contentType, ext } = parseUploadedImage(c.req.header("content-type") ?? "", bytes);
 
   const key = `file-${crypto.randomUUID()}.${ext}`;

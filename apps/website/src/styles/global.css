@@ -59,8 +59,8 @@
   h6 {
     margin: 0 0 0.5rem 0;
     color: rgb(var(--black));
-    /* Tailwind's preflight resets heading weight; restore the bold the preview
-       (and apps/test) headings have. */
+    /* Tailwind's preflight resets heading weight; restore the bold headings the
+       admin preview window mirrors. */
     font-weight: 700;
     line-height: 1.2;
   }

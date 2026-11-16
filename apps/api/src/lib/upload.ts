@@ -46,17 +46,65 @@ export function matchesImageMagic(contentType: string, bytes: Uint8Array): boole
 // an unsupported type, empty body, oversized body, or mismatched signature.
 export function parseUploadedImage(
   rawContentType: string,
-  bytes: ArrayBufferLike,
+  bytes: Uint8Array,
 ): { contentType: string; ext: string } {
   const contentType = rawContentType.split(";")[0]?.trim().toLowerCase() ?? "";
   const ext = IMAGE_EXT[contentType];
   if (!ext) throw new AppError(415, "Unsupported image type");
   if (bytes.byteLength === 0) throw new AppError(400, "Empty file");
   if (bytes.byteLength > MAX_SIZE) throw new AppError(413, "Image too large");
-  if (!matchesImageMagic(contentType, new Uint8Array(bytes))) {
+  if (!matchesImageMagic(contentType, bytes)) {
     throw new AppError(415, "File content does not match its declared image type");
   }
   return { contentType, ext };
+}
+
+// Read a request body while enforcing the size cap, so an oversized upload is
+// aborted as soon as it crosses the limit instead of being buffered first. A
+// Worker only has 128 MB of memory, so a 200 MB body would OOM long before the
+// size check in parseUploadedImage() could reject it.
+export async function readBodyLimited(
+  body: ReadableStream<Uint8Array> | null,
+  limit: number = MAX_SIZE,
+): Promise<Uint8Array> {
+  if (!body) return new Uint8Array();
+
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limit) {
+      await reader.cancel();
+      throw new AppError(413, "Image too large");
+    }
+    chunks.push(value);
+  }
+
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
+// Read an image upload without ever buffering more than MAX_SIZE. The declared
+// Content-Length is checked first because it costs nothing; readBodyLimited()
+// then enforces the same cap for chunked bodies that have no length header.
+export async function readImageBody(req: {
+  header(name: string): string | undefined;
+  raw: { body: ReadableStream<Uint8Array> | null };
+}): Promise<Uint8Array> {
+  const declared = Number(req.header("content-length") ?? "");
+  if (Number.isFinite(declared) && declared > MAX_SIZE) {
+    throw new AppError(413, "Image too large");
+  }
+  return readBodyLimited(req.raw.body);
 }
 
 export interface UploadItem {

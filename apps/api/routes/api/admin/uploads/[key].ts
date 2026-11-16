@@ -3,7 +3,7 @@ import { eq, db } from "void/db";
 import { storage } from "void/storage";
 import { upload } from "@schema";
 import { AppError } from "../../../../src/lib/error.ts";
-import { parseUploadedImage } from "../../../../src/lib/upload.ts";
+import { parseUploadedImage, readImageBody } from "../../../../src/lib/upload.ts";
 
 // DELETE /api/admin/uploads/:key — remove an uploaded object from R2 and its row.
 export const DELETE = defineHandler(async (c) => {
@@ -21,7 +21,7 @@ export const PUT = defineHandler(async (c) => {
   const key = c.req.param("key")!;
   if (!(await storage.head(key))) throw new AppError(404, "File not found");
 
-  const bytes = await c.req.arrayBuffer();
+  const bytes = await readImageBody(c.req);
   const { contentType } = parseUploadedImage(c.req.header("content-type") ?? "", bytes);
 
   await storage.put(key, bytes, { httpMetadata: { contentType } });

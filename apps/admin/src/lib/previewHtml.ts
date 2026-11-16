@@ -1,5 +1,5 @@
 // Builds a standalone HTML document for the "open in new window" post preview.
-// It mirrors apps/test's blog post page exactly (Bear Blog base CSS + the
+// It mirrors apps/website's blog post page exactly (Bear Blog base CSS + the
 // BlogPost.astro article layout), minus the site's header and footer chrome.
 
 export interface PreviewData {
@@ -13,8 +13,8 @@ export interface PreviewData {
   contentHtml: string;
 }
 
-// Mirrors apps/test/src/styles/global.css (Bear Blog) plus the inline styles
-// from apps/test/src/layouts/BlogPost.astro.
+// Mirrors apps/website/src/styles/global.css (Bear Blog) plus the inline styles
+// from apps/website/src/layouts/BlogPost.astro.
 const PREVIEW_CSS = `
 :root {
   --accent: #2337ff;
@@ -143,7 +143,7 @@ hr {
   border-top: 1px solid rgb(var(--gray-light));
 }
 
-/* Article layout (apps/test/src/layouts/BlogPost.astro) */
+/* Article layout (apps/website/src/layouts/BlogPost.astro) */
 .hero-image {
   width: 100%;
 }

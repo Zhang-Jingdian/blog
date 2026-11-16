@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 import { AppError } from "../src/lib/error.ts";
-import { matchesImageMagic, parseUploadedImage, toUploadItem } from "../src/lib/upload.ts";
+import {
+  matchesImageMagic,
+  parseUploadedImage,
+  readBodyLimited,
+  toUploadItem,
+} from "../src/lib/upload.ts";
 
 function bytes(...nums: number[]): Uint8Array {
   return new Uint8Array(nums);
@@ -96,7 +101,7 @@ describe("parseUploadedImage", () => {
 
   it("parses a valid image and returns its normalized type and extension", () => {
     const png = bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
-    expect(parseUploadedImage("image/png", png.buffer)).toEqual({
+    expect(parseUploadedImage("image/png", png)).toEqual({
       contentType: "image/png",
       ext: "png",
     });
@@ -104,26 +109,24 @@ describe("parseUploadedImage", () => {
 
   it("strips charset and parameters from the content type", () => {
     const png = bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
-    expect(parseUploadedImage("image/png; charset=utf-8", png.buffer).contentType).toBe(
-      "image/png",
-    );
+    expect(parseUploadedImage("image/png; charset=utf-8", png).contentType).toBe("image/png");
   });
 
   it("rejects an unsupported content type", () => {
     expectAppError(
-      () => parseUploadedImage("text/html", new ArrayBuffer(4)),
+      () => parseUploadedImage("text/html", new Uint8Array(4)),
       415,
       "Unsupported image type",
     );
   });
 
   it("rejects an empty body", () => {
-    expectAppError(() => parseUploadedImage("image/png", new ArrayBuffer(0)), 400, "Empty file");
+    expectAppError(() => parseUploadedImage("image/png", new Uint8Array(0)), 400, "Empty file");
   });
 
   it("rejects a body larger than 5 MB", () => {
     expectAppError(
-      () => parseUploadedImage("image/png", new ArrayBuffer(5 * 1024 * 1024 + 1)),
+      () => parseUploadedImage("image/png", new Uint8Array(5 * 1024 * 1024 + 1)),
       413,
       "Image too large",
     );
@@ -132,9 +135,36 @@ describe("parseUploadedImage", () => {
   it("rejects content that does not match its declared type", () => {
     const notPng = bytes(0xff, 0xd8, 0xff);
     expectAppError(
-      () => parseUploadedImage("image/png", notPng.buffer),
+      () => parseUploadedImage("image/png", notPng),
       415,
       "File content does not match its declared image type",
     );
+  });
+});
+
+describe("readBodyLimited", () => {
+  function streamOf(chunks: Uint8Array[]): ReadableStream<Uint8Array> {
+    return new ReadableStream({
+      start(controller) {
+        for (const chunk of chunks) controller.enqueue(chunk);
+        controller.close();
+      },
+    });
+  }
+
+  it("concatenates the chunks in order", async () => {
+    const body = await readBodyLimited(streamOf([bytes(1, 2), bytes(3)]));
+
+    expect(Array.from(body)).toEqual([1, 2, 3]);
+  });
+
+  it("returns an empty array when there is no body", async () => {
+    expect((await readBodyLimited(null)).byteLength).toBe(0);
+  });
+
+  it("aborts once the cap is exceeded instead of buffering everything", async () => {
+    const body = streamOf([bytes(1, 2, 3), bytes(4, 5, 6)]);
+
+    await expect(readBodyLimited(body, 4)).rejects.toMatchObject({ status: 413 });
   });
 });
