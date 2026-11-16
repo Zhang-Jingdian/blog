@@ -50,14 +50,30 @@ Inside `vp run -r build`, **the website build needs the API to be running** — 
 
 ## Environment variables
 
-| Variable            | App     | Default                     | Purpose                                             |
-| ------------------- | ------- | --------------------------- | --------------------------------------------------- |
-| `ADMIN_ORIGIN`      | api     | `http://localhost:5174`     | Admin origin allowed by CORS                        |
-| `VITE_API_BASE_URL` | website | `http://localhost:5173`     | API location, injected by CI in production          |
-| `VITE_SITE_URL`     | website | `http://localhost:4321`     | Site URL for canonical links and sitemap            |
-| `VITE_API_BASE_URL` | admin   | empty (uses the Vite proxy) | Production gets the deployed API Worker URL from CI |
+| Variable                | App     | Default                     | Purpose                                                    |
+| ----------------------- | ------- | --------------------------- | ---------------------------------------------------------- |
+| `ADMIN_ORIGIN`          | api     | `http://localhost:5174`     | Admin origin allowed by CORS                               |
+| `CF_ACCESS_TEAM_DOMAIN` | api     | unset                       | Zero Trust team domain, e.g. `myteam.cloudflareaccess.com` |
+| `CF_ACCESS_AUD`         | api     | unset                       | AUD tag of the Access application in front of the API      |
+| `VITE_API_BASE_URL`     | website | `http://localhost:5173`     | API location, injected by CI in production                 |
+| `VITE_SITE_URL`         | website | `http://localhost:4321`     | Site URL for canonical links and sitemap                   |
+| `VITE_API_BASE_URL`     | admin   | empty (uses the Vite proxy) | Production gets the deployed API Worker URL from CI        |
 
 **`apps/api` may only contain `.env`.** Void's `void/env` refuses to start when it finds both `.env` and `.env.example`, so this app has no example file; the variables are typed in `apps/api/env.ts`.
+
+### Admin authentication
+
+`/api/admin/*` verifies the Cloudflare Access JWT (`Cf-Access-Jwt-Assertion`) inside the Worker, so the admin API is protected even if an Access policy is scoped to the wrong hostname or the Worker is called directly.
+
+- With both variables unset in local development, the guard logs one warning and lets requests through, so `vp run dev:admin` works without a Zero Trust setup.
+- In production both are required. If they are missing the admin API fails closed with a 500, and requests without a valid token get a 401.
+- To find the AUD tag: Zero Trust dashboard → Access → Applications → your application → Overview → Application Audience (AUD) Tag.
+
+## Public API and rendered content
+
+- `GET /api/posts` returns the fields a list page needs (`description`, `category`, `tags`) alongside the post metadata.
+- `GET /api/feed` returns every published post with its body. RSS and the blog pages' `getStaticPaths` use it, which keeps the site build at a constant number of API requests instead of one per post.
+- Markdown is rendered by `packages/shared`, and raw HTML inside a post is **escaped rather than rendered**: only `br`, `kbd`, `mark`, `sub`, `sup`, `small`, `del` and `ins` survive, and always without attributes. Links and images whose protocol is not `http(s)`, `mailto` or `tel` are dropped. Both rules exist because the site injects the HTML with `set:html` and the admin preview writes it into a same-origin window.
 
 ## `apps/api` directory conventions
 

@@ -36,3 +36,5 @@ release. Add a tool name to select part of the graph. For example, run
 - Commit messages follow Conventional Commits (`feat(scope):`, `fix:`, `refactor:`, `chore(deps):`).
 - `apps/api/{routes,middleware,db}` are Void framework conventions — do not reorganize them; only `src/lib/` is free-form.
 - `apps/api` may only contain `.env` (no `.env.example`); `void/env` refuses to start when both exist.
+- `/api/admin/*` must verify the Cloudflare Access JWT (`middleware/02.access.ts`). Never remove that guard, and never turn a missing configuration into an allow in production.
+- Raw HTML in post content is escaped by `packages/shared`, and unsafe URL protocols are dropped. Both are deliberate: the site renders markdown with `set:html`.
