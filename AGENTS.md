@@ -38,3 +38,4 @@ release. Add a tool name to select part of the graph. For example, run
 - `apps/api` may only contain `.env` (no `.env.example`); `void/env` refuses to start when both exist.
 - `/api/admin/*` must verify the Cloudflare Access JWT (`middleware/02.access.ts`). Never remove that guard, and never turn a missing configuration into an allow in production.
 - Raw HTML in post content is escaped by `packages/shared`, and unsafe URL protocols are dropped. Both are deliberate: the site renders markdown with `set:html`.
+- Deploys go through CI (`push` to `main`, plus the daily website rebuild). `void deploy` run from a workstation fails the deploy-config check — the pointer ends up in `.void/preview-deploy-config.json` instead of `.wrangler/deploy/config.json` — so a local deploy failure says nothing about the code; verify with CI instead.
