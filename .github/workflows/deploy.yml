@@ -3,6 +3,10 @@ name: Deploy
 on:
   push:
     branches: [main]
+  schedule:
+    # The site is static, so posts published from the admin UI only appear after
+    # a rebuild. 20:00 UTC = 04:00 Asia/Shanghai, before the day's traffic.
+    - cron: "0 20 * * *"
   workflow_dispatch:
     inputs:
       app:
@@ -61,8 +65,10 @@ jobs:
           VITE_API_BASE_URL: https://api.pill001.com
         run: bunx vp build && bunx void deploy --dir dist --spa --platform cloudflare
 
+      # The scheduled run rebuilds only the site: it reads the live API, so there
+      # is nothing to redeploy on the API or admin side.
       - name: Deploy website
-        if: github.event_name == 'push' || inputs.app == 'all' || inputs.app == 'website'
+        if: github.event_name == 'push' || github.event_name == 'schedule' || inputs.app == 'all' || inputs.app == 'website'
         working-directory: apps/website
         env:
           VITE_API_BASE_URL: https://api.pill001.com

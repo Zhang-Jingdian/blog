@@ -89,3 +89,5 @@ The first three are Void framework conventions rather than arbitrary choices —
 ## Deployment
 
 `.github/workflows/deploy.yml` deploys each app to Cloudflare separately; `ci.yml` runs `vp check` and `vp test` on pull requests.
+
+The website is static, so a post published from the admin UI only reaches it after a rebuild. That is why the workflow also runs on a daily schedule (04:00 Asia/Shanghai) that rebuilds the site alone — the API and admin are untouched because the build reads the live API. To publish sooner, run the workflow manually with `app: website`.
